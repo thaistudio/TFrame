@@ -69,7 +69,7 @@ namespace TFrame.CreateDimensions.Commands
                         XYZ p5 = BeamTools.GetBeamPoint(beam, BeamPoint.P5);
                         XYZ p6 = BeamTools.GetBeamPoint(beam, BeamPoint.P6);
                         XYZ p7 = BeamTools.GetBeamPoint(beam, BeamPoint.P7);
-                        ///abc i dont know
+                        ///abc i dont know let write smt
 
                         Face f3 = BeamTools.GetBeamFace(beam, BeamFace.Face3);
 
