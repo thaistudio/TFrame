@@ -9,6 +9,8 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using Autodesk.Revit.DB.Structure;
 
+using TFrame.Sections;
+
 using TFrame.TTools;
 
 namespace TFrame.CreateDimensions.Commands
@@ -61,14 +63,38 @@ namespace TFrame.CreateDimensions.Commands
                     t.Start();
                     foreach (Element beam in selBeams)
                     {
-                        XYZ p00 = BeamTools.GetBeamPoint(beam, BeamPoint.P0);
-                        XYZ p10 = BeamTools.GetBeamPoint(beam, BeamPoint.P1);
-                        XYZ p2 = BeamTools.GetBeamPoint(beam, BeamPoint.P2);
-                        XYZ p3 = BeamTools.GetBeamPoint(beam, BeamPoint.P3);
-                        XYZ p4 = BeamTools.GetBeamPoint(beam, BeamPoint.P4);
-                        XYZ p5 = BeamTools.GetBeamPoint(beam, BeamPoint.P5);
-                        XYZ p6 = BeamTools.GetBeamPoint(beam, BeamPoint.P6);
-                        XYZ p7 = BeamTools.GetBeamPoint(beam, BeamPoint.P7);
+                        SectionTools sTools = new SectionTools(commandData);
+                        List<ViewSection> viewSections = SectionTools.CacheViewSections(beam, doc);
+
+                        List<Section> secs = sTools.CacheSections(beam, doc, SectionTools.SectionType.CrossSection);
+                        Section sec = secs.FirstOrDefault();
+                        ViewSection vs = sec.ViewSection;
+
+                        XYZ b0 = BeamTools.GetBeamEnds(beam)[0];
+                        XYZ b1 = BeamTools.GetBeamEnds(beam)[1];
+
+                        XYZ s01 = vs.Origin;
+                        XYZ s00 = new XYZ(sec.Origin.X, sec.Origin.Y, s01.Z);
+                        XYZ s11 = GeometryTools.GetPointAlignToLineAtDistance(s01, s00, 1);
+                        //XYZ l0 = GeometryTools.GetPointAtDistNormalToAVector(s01 - s11, s01, sec.ZMaxExtra, s01.Z);
+                        XYZ l0 = GeometryTools.Try(s01, s11, 1);
+                        XYZ l1 = GeometryTools.GetPointParallelToLineAtDistance(s01, s11, l0, 2);
+
+
+                        List<XYZ> topPoints = BeamTools.GetPointsOfFace(beam, BeamFace.Face2);
+                        List<XYZ> botPoints = BeamTools.GetPointsOfFace(beam, BeamFace.Face4);
+                        
+                        
+                        
+
+                        XYZ p00 = BeamTools.GetBeamPoint(beam, botPoints, BeamPoint.P0);
+                        XYZ p10 = BeamTools.GetBeamPoint(beam, topPoints, BeamPoint.P1);
+                        XYZ p2 = BeamTools.GetBeamPoint(beam, topPoints, BeamPoint.P2);
+                        XYZ p3 = BeamTools.GetBeamPoint(beam, botPoints, BeamPoint.P3);
+                        XYZ p4 = BeamTools.GetBeamPoint(beam, botPoints, BeamPoint.P4);
+                        XYZ p5 = BeamTools.GetBeamPoint(beam, topPoints, BeamPoint.P5);
+                        XYZ p6 = BeamTools.GetBeamPoint(beam, topPoints, BeamPoint.P6);
+                        XYZ p7 = BeamTools.GetBeamPoint(beam, botPoints, BeamPoint.P7);
                         ///abc i dont know let write smt
 
                         Face f3 = BeamTools.GetBeamFace(beam, BeamFace.Face3);
@@ -83,7 +109,6 @@ namespace TFrame.CreateDimensions.Commands
                         Face f5 = BeamTools.GetBeamFace(beam, BeamFace.Face5);
 
                         Mesh m1 = f5.Triangulate();
-                        var l1 = m1.Vertices;
                         string s1 = f5.Reference.ConvertToStableRepresentation(doc);
                         string beamUniqueId1 = beam.UniqueId;
                         string rep1 = beamUniqueId1 + ":0:INSTANCE:" + s1;
@@ -91,11 +116,11 @@ namespace TFrame.CreateDimensions.Commands
 
                         XYZ p0 = new XYZ(42.9662924, -8.992850299, 0);
                         XYZ p1 = new XYZ(42.9662924, -9.484976283, 0);
-                        Line line = Line.CreateBound(p1, p0);
+                        Line line = Line.CreateBound(l1, l0);
                         ReferenceArray referenceArray = new ReferenceArray();
                         referenceArray.Append(instanceRef0);
                         referenceArray.Append(instanceRef1);
-
+                        FilteredElementCollector diTypFiltr = new FilteredElementCollector(doc).OfClass(typeof(DimensionType)).WhereElementIsElementType();
                         Dimension dimension = doc.Create.NewDimension(doc.ActiveView, line, referenceArray);
                     }
                     t.Commit();

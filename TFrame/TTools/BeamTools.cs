@@ -280,73 +280,88 @@ namespace TFrame.TTools
         }
 
 
-        public static XYZ GetBeamPoint(Element e, BeamPoint point)
+        /// <summary>
+        /// Return points of any face of a beam
+        /// </summary>
+        /// <param name="e">Beam to find points</param>
+        /// <param name="face">Face to find points</param>
+        /// <returns></returns>
+        public static List<XYZ> GetPointsOfFace(Element e, BeamFace face)
+        {
+            List<XYZ> points = new List<XYZ>(); // List of corner points of a face
+
+            Face selFace = GetBeamFace(e, face); 
+            EdgeArrayArray selArrayArray = selFace.EdgeLoops; // EdgeLoops property returns the exact points, in terms of coordinate
+
+            foreach (EdgeArray edgeArray in selArrayArray) // Use loop to add 4 corner points to points
+            {
+                foreach (Edge edge in edgeArray)
+                {
+                    // Get 2 end points of each edge
+                    Curve curve = edge.AsCurve();
+                    XYZ p0 = curve.GetEndPoint(0);
+                    XYZ p1 = curve.GetEndPoint(1);
+
+                    if (points.Count == 0) points.Add(p0); // 1st iteration, just add c0
+
+                    // Only add points that did not exist in points
+                    if (!points.Contains(p1)) points.Add(p1); 
+                    if (!points.Contains(p0)) points.Add(p0);
+                }
+            }
+
+            return points;
+        }
+
+        /// <summary>
+        /// Return any corner point of a beam. To get points, need to use GetPointsOfFace()
+        /// The logic is in any face, define 2 lines that are normal to p0p1 (beam line) at 2 ends of the beam. Angle between those lines and points will be calculated. Corner points will create min or max angles. 
+        /// </summary>
+        /// <param name="e">The beam to get points</param>
+        /// <param name="points">Use GetPointsOfFace. Use top/bot face as BeamFace(Face2/Face4)</param>
+        /// <param name="point">The point to find</param>
+        /// <returns></returns>
+        public static XYZ GetBeamPoint(Element e, List<XYZ> points, BeamPoint point)
         {
             XYZ desiredPoint = new XYZ();
-            List<XYZ> topPoints = new List<XYZ>();
-            List<XYZ> botPoints = new List<XYZ>();
-            Face topFace = GetBeamFace(e, BeamFace.Face2);
-            Face botFace = GetBeamFace(e, BeamFace.Face4);
-            EdgeArrayArray topArrayArray = topFace.EdgeLoops;
-            EdgeArrayArray botArrayArray = botFace.EdgeLoops;
 
-            foreach (EdgeArray edgeArrayTop in topArrayArray)
-            {
-                foreach (Edge edge in edgeArrayTop)
-                {
-                    Curve curve = edge.AsCurve();
-                    XYZ c0 = curve.GetEndPoint(0);
-                    XYZ c1 = curve.GetEndPoint(1);
-                    if (topPoints.Count == 0) topPoints.Add(c0);
-                    if (!topPoints.Contains(c1)) topPoints.Add(c1);
-                    if (!topPoints.Contains(c0)) topPoints.Add(c0);
-                }
-            }
+            // Oringinal end points of the beam
+            XYZ p0o = GetBeamEnds(e)[0];
+            XYZ p1o = GetBeamEnds(e)[1];
 
-            foreach (EdgeArray edgeArrayBot in botArrayArray)
-            {
-                foreach (Edge edge in edgeArrayBot)
-                {
-                    Curve curve = edge.AsCurve();
-                    XYZ c0 = curve.GetEndPoint(0);
-                    XYZ c1 = curve.GetEndPoint(1);
-                    if (botPoints.Count == 0) botPoints.Add(c0);
-                    if (!botPoints.Contains(c1)) botPoints.Add(c1);
-                    if (!botPoints.Contains(c0)) botPoints.Add(c0);
-                }
-            }
+            // In some cases, i.e. beam connects to another beam at angle, min or max angles won't be the desired point. End points will be moved 1ft further to gurantee the max/min angle logic.
+            XYZ p0 = GeometryTools.GetPointAlignToLineAtDistance(p1o, p0o, 1);
+            XYZ p1 = GeometryTools.GetPointAlignToLineAtDistance(p0o, p1o, 1);
 
-            XYZ p0 = GetBeamEnds(e)[0];
-            XYZ p1 = GetBeamEnds(e)[1];
             XYZ p2 = GeometryTools.GetPointAtDistNormalToAVector(p1.Subtract(p0), p0, 1, p0.Z); // p0p1 _|_ p0p2
             XYZ p3 = GeometryTools.GetPointAtDistNormalToAVector(p0.Subtract(p1), p1, 1, p0.Z); // p0p1 _|_ p0p3
 
             if (point == BeamPoint.P0 || point == BeamPoint.P3) // 2 bottom points
             {
-                List<XYZ> p03 = botPoints.OrderBy(x => GeometryTools.AngleBetween2Vector(p0, p2, p0, x)).ToList();
+                List<XYZ> p03 = points.OrderBy(x => GeometryTools.AngleBetween2Vector(p0, p2, p0, x)).ToList();
                 if (point == BeamPoint.P3) desiredPoint = p03.FirstOrDefault();
                 if (point == BeamPoint.P0) desiredPoint = p03.LastOrDefault();
             }
 
             if (point == BeamPoint.P4 || point == BeamPoint.P7) // The other bottom points
             {
-                List<XYZ> p47 = botPoints.OrderBy(x => GeometryTools.AngleBetween2Vector(p1, p3, p1, x)).ToList(); // The angle is computed with p1p3 to return first and last members
-                if (point == BeamPoint.P7) desiredPoint = p47.FirstOrDefault();
-                if (point == BeamPoint.P4) desiredPoint = p47.LastOrDefault();
+                List<XYZ> p47 = points.OrderBy(x => GeometryTools.AngleBetween2Vector(p1, p3, p1, x)).ToList(); // The angle is computed with p1p3 to return first and last members
+                if (point == BeamPoint.P4) desiredPoint = p47.FirstOrDefault();
+                if (point == BeamPoint.P7) desiredPoint = p47.LastOrDefault();
             }
 
             if (point == BeamPoint.P1 || point == BeamPoint.P2) // 2 top points
             {
-                List<XYZ> p12 = topPoints.OrderBy(x => GeometryTools.AngleBetween2Vector(p0, p2, p0, x)).ToList();
+                List<XYZ> p12 = points.OrderBy(x => GeometryTools.AngleBetween2Vector(p0, p2, p0, x)).ToList();
                 if (point == BeamPoint.P2) desiredPoint = p12.FirstOrDefault();
                 if (point == BeamPoint.P1) desiredPoint = p12.LastOrDefault();
             }
 
             if (point == BeamPoint.P5 || point == BeamPoint.P6) // The other bottom points
             {
-                List<XYZ> p56 = topPoints.OrderBy(x => GeometryTools.AngleBetween2Vector(p1, p3, p1, x)).ToList(); // The angle is computed with p1p3 to return first and last members
-                if (point == BeamPoint.P6) desiredPoint = p56.FirstOrDefault();
-                if (point == BeamPoint.P5) desiredPoint = p56.LastOrDefault();
+                List<XYZ> p56 = points.OrderBy(x => GeometryTools.AngleBetween2Vector(p1, p3, p1, x)).ToList(); // The angle is computed with p1p3 to return first and last members
+                if (point == BeamPoint.P5) desiredPoint = p56.FirstOrDefault();
+                if (point == BeamPoint.P6) desiredPoint = p56.LastOrDefault();
             }
             return desiredPoint;
         }
@@ -541,33 +556,6 @@ namespace TFrame.TTools
                 z = vertices[i].Z; // Add Z value of the current point to compare to next point
             }
             return good;
-        }
-
-        public static List<XYZ> GetBeamPoints(Element e)
-        {
-            List<XYZ> allPoints = new List<XYZ>();
-            Solid solid = GetSolidFromElement(e); // Get the solid that represents e
-            foreach (Face face in solid.Faces) // Loop through all faces of solid
-            {
-                Mesh mesh = face.Triangulate(); // Get the mesh (triangles on each face)
-                List<XYZ> vertices = mesh.Vertices.ToList(); // Get all points on each face
-
-                if (allPoints.Count == 0)// Add all members in the first iteration
-                {
-                    allPoints.AddRange(vertices);
-                    continue; // Move to next iteration
-                }
-                   
-                foreach (XYZ vertice in vertices) // From the 2nd iteration, check if the point already added to allPoints before adding it
-                {
-                    foreach (XYZ point in allPoints)
-                    {
-                        if (vertice.X == point.X && vertice.Y == point.Y && vertice.Z == point.Z) continue; // If point added, move to next iteration
-                        else allPoints.Add(vertice);
-                    }
-                }
-            }
-            return allPoints;
         }
 
         /// <summary>

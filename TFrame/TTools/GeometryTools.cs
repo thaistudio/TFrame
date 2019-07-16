@@ -180,6 +180,19 @@ namespace TFrame.TTools
             return rotation;
         }
 
+        public static XYZ Try(XYZ p0, XYZ p1, double dist)
+        {
+            double a = (p1 - p0).X;
+            double b = (p1 - p0).Y;
+            double t = dist / (Math.Sqrt(a * a + b * b));
+            double x = p0.X - b * t;
+            double y = p0.Y + a * t;
+            double z = p0.Z;
+            XYZ p = new XYZ(x, y, z);
+            return p;
+        }
+
+
         /// <summary>
         /// Retrieve a point at distance l from lineOrigin (a point), perpendicular to beamVector
         /// </summary>
@@ -192,7 +205,7 @@ namespace TFrame.TTools
         {
             double x, y;
             double torlerence = 0.0000001;
-            if (Math.Abs(beamVector.X) < torlerence)
+            if (Math.Abs(beamVector.X) < torlerence) 
             {
                 y = lineOrigin.Y;
                 x = lineOrigin.X - l;
@@ -210,6 +223,51 @@ namespace TFrame.TTools
 
             XYZ position = new XYZ(x, y, desiredZ);
             return position;
+        }
+
+        /// <summary>
+        /// Return a point p at distance dist from p1. p0, p1, p align
+        /// </summary>
+        /// <param name="p0">1st point of the line</param>
+        /// <param name="p1">2nd point of the line</param>
+        /// <param name="dist">distance from p1 to p</param>
+        /// <returns></returns>
+        public static XYZ GetPointAlignToLineAtDistance(XYZ p0, XYZ p1, double dist)
+        {
+            double lineLength = p0.DistanceTo(p1);
+
+            // A point of line p0p1 has coordinate: x = x0 + at; y = y0 + bt; z = z0 + zt
+            // a = x1 - x0; b = y1 - y0; c = z1 - z0
+            double a = p1.X - p0.X;
+            double b = p1.Y - p0.Y;
+            double c = p1.Z - p0.Z;
+            double t = lineLength * (lineLength + dist) / (a * a + b * b + c * c);
+            XYZ p = new XYZ(p0.X + a * t, p0.Y + b * t, p0.Z + c * t);
+
+            return p;
+        }
+
+        /// <summary>
+        /// Return a point p at distance dist from p2, pp2 // p0p1
+        /// </summary>
+        /// <param name="p0">1st point of the parallel vector</param>
+        /// <param name="p1">2nd point of the parallel vector</param>
+        /// <param name="p2">Point where p is distanced from</param>
+        /// <param name="dist">distance from p2 to p</param>
+        /// <returns></returns>
+        public static XYZ GetPointParallelToLineAtDistance(XYZ p0, XYZ p1, XYZ p2, double dist)
+        {
+            double lineLength = p0.DistanceTo(p1);
+
+            // A point of line p0p1 has coordinate: x = x0 + at; y = y0 + bt; z = z0 + zt
+            // a = x1 - x0; b = y1 - y0; c = z1 - z0
+            double a = p1.X - p0.X;
+            double b = p1.Y - p0.Y;
+            double c = p1.Z - p0.Z;
+            double t = lineLength * dist / (a * a + b * b + c * c);
+            XYZ p = new XYZ(p2.X + a * t, p2.Y + b * t, p2.Z + c * t);
+
+            return p;
         }
 
         public static XYZ GetMidPoint(XYZ p0, XYZ p1)
