@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TFrame.CreateDimensions.Forms
+namespace BaseForm
 {
     /// <summary>
-    /// Interaction logic for BeamDimWPF.xaml
+    /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class BeamDimWPF : UserControl
+    public partial class MainWindow : Window
     {
-        public BeamDimWPF()
+        public MainWindow()
         {
             InitializeComponent();
         }

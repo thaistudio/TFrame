@@ -180,7 +180,19 @@ namespace TFrame.TTools
             return rotation;
         }
 
-        public static XYZ Try(XYZ p0, XYZ p1, double dist)
+        /// <summary>
+        /// Get point p at dist from p0p1. pp0 _|_ p0p1
+        /// p
+        /// |
+        /// ^ <--dist 
+        /// |
+        /// p0_____>___p1 
+        /// </summary>
+        /// <param name="p0"></param>
+        /// <param name="p1"></param>
+        /// <param name="dist"></param>
+        /// <returns></returns>
+        public static XYZ GetPointNormalToLineAtDistance(XYZ p0, XYZ p1, double dist)
         {
             double a = (p1 - p0).X;
             double b = (p1 - p0).Y;
@@ -227,6 +239,9 @@ namespace TFrame.TTools
 
         /// <summary>
         /// Return a point p at distance dist from p1. p0, p1, p align
+        /// 
+        /// p0____>____p1_____>____p
+        ///                 dist   
         /// </summary>
         /// <param name="p0">1st point of the line</param>
         /// <param name="p1">2nd point of the line</param>
@@ -249,6 +264,12 @@ namespace TFrame.TTools
 
         /// <summary>
         /// Return a point p at distance dist from p2, pp2 // p0p1
+        ///  p            p1
+        ///  |            |
+        ///  ^dist        ^  
+        ///  |            |
+        ///  p2           |
+        ///               p0
         /// </summary>
         /// <param name="p0">1st point of the parallel vector</param>
         /// <param name="p1">2nd point of the parallel vector</param>

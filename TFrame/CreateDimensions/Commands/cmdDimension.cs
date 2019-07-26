@@ -10,17 +10,17 @@ using Autodesk.Revit.UI.Selection;
 using Autodesk.Revit.DB.Structure;
 
 using TFrame.Sections;
-
 using TFrame.TTools;
 
 namespace TFrame.CreateDimensions.Commands
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    class cmdDimension : IExternalCommand
+    public class cmdDimension : IExternalCommand
     {
         public Document doc;
         public ExternalCommandData _commandData;
         public List<Element> selBeams = new List<Element>();
+
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
@@ -37,26 +37,6 @@ namespace TFrame.CreateDimensions.Commands
                 UIDocument uiddoc = commandData.Application.ActiveUIDocument;
                 Selection sel = uiddoc.Selection;
 
-                //foreach (ElementId id in sel.GetElementIds())
-                //{
-                //    Element e = doc.GetElement(id);
-                //    Wall wall = (Wall)e;
-                //}
-                //GeometryTools.Learn(selBeams);
-
-
-                //XYZ a = new XYZ(31.079,-7.201,0);
-                //XYZ b = new XYZ(30.375, -5.691,0);
-                //XYZ c = new XYZ(31.288, -8.686,0);
-                //XYZ d = new XYZ();
-
-                //GeometryTools gTools = new GeometryTools();
-                //XYZ beamVector = b.Subtract(a);
-                //XYZ normal = gTools.GetPointAtDistNormalToAVector(beamVector, a, 1, 0);
-
-                //double ang = UnitUtils.Convert(GeometryTools.AngleBetween2Vector(a, normal, a, c), DisplayUnitType.DUT_RADIANS, DisplayUnitType.DUT_DECIMAL_DEGREES);
-
-                
 
                 using (Transaction t = new Transaction(doc, "Create Dimensions"))
                 {
@@ -73,20 +53,18 @@ namespace TFrame.CreateDimensions.Commands
                         XYZ b0 = BeamTools.GetBeamEnds(beam)[0];
                         XYZ b1 = BeamTools.GetBeamEnds(beam)[1];
 
+                        // This is only working for horizontal dimensions. s01.Z is the elevation of the dimension
                         XYZ s01 = vs.Origin;
                         XYZ s00 = new XYZ(sec.Origin.X, sec.Origin.Y, s01.Z);
                         XYZ s11 = GeometryTools.GetPointAlignToLineAtDistance(s01, s00, 1);
-                        //XYZ l0 = GeometryTools.GetPointAtDistNormalToAVector(s01 - s11, s01, sec.ZMaxExtra, s01.Z);
-                        XYZ l0 = GeometryTools.Try(s01, s11, 1);
+                        XYZ l0 = GeometryTools.GetPointNormalToLineAtDistance(s01, s11, 1);
                         XYZ l1 = GeometryTools.GetPointParallelToLineAtDistance(s01, s11, l0, 2);
 
 
                         List<XYZ> topPoints = BeamTools.GetPointsOfFace(beam, BeamFace.Face2);
                         List<XYZ> botPoints = BeamTools.GetPointsOfFace(beam, BeamFace.Face4);
-                        
-                        
-                        
 
+                       
                         XYZ p00 = BeamTools.GetBeamPoint(beam, botPoints, BeamPoint.P0);
                         XYZ p10 = BeamTools.GetBeamPoint(beam, topPoints, BeamPoint.P1);
                         XYZ p2 = BeamTools.GetBeamPoint(beam, topPoints, BeamPoint.P2);
@@ -114,8 +92,6 @@ namespace TFrame.CreateDimensions.Commands
                         string rep1 = beamUniqueId1 + ":0:INSTANCE:" + s1;
                         Reference instanceRef1 = Reference.ParseFromStableRepresentation(doc, rep1);
 
-                        XYZ p0 = new XYZ(42.9662924, -8.992850299, 0);
-                        XYZ p1 = new XYZ(42.9662924, -9.484976283, 0);
                         Line line = Line.CreateBound(l1, l0);
                         ReferenceArray referenceArray = new ReferenceArray();
                         referenceArray.Append(instanceRef0);

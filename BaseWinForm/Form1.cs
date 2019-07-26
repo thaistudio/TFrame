@@ -8,13 +8,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TFrame.CreateDimensions.Forms
+namespace BaseWinForm
 {
-    public partial class BeamDimForm : Form
+    public partial class Form1 : Form
     {
-        public BeamDimForm()
+        public Form1()
         {
             InitializeComponent();
+        }
+
+        private void ElementHost1_ChildChanged(object sender, System.Windows.Forms.Integration.ChildChangedEventArgs e)
+        {
+
         }
     }
 }
