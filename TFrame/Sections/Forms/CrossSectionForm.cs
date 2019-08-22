@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-
-using TFrame.Sections;
-
 
 namespace TFrame
 {
@@ -308,14 +301,8 @@ namespace TFrame
 
         private void TSave()
         {
-            // Save sections
-            //_cvs.cachedSections1Beam = CachedSections2;
-
-            // Save index of view template selection
-            FieldClass.ViewTempIndex = comboBox1.SelectedIndex;
-
-            // Save location 
-            FieldClass.FieldLocation = (int)numericUpDown1.Value;
+            //foreach (string uniqueId in _cvs.UniqueIds)
+            //DataTools.SaveWinFormUI(this, @"D:\Thai\Code\Revit\TFrame\Data\UI.xml", uniqueId);
         }
 
         private void SaveOptionsToFile()

@@ -13,9 +13,8 @@ using Autodesk.Revit.UI;
 
 using Form = System.Windows.Forms.Form;
 
-using TFrame.Sections;
 
-namespace TFrame.Sections.Forms
+namespace TFrame
 {
     public partial class LongSectionForm : Form
     {

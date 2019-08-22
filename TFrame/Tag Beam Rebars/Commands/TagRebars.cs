@@ -1,24 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using Autodesk.Revit.DB.Structure;
 
-using TFrame.Sections;
-using TFrame.TTools;
-
-namespace TFrame.Tag
+namespace TFrame
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     class TagRebars : IExternalCommand
     {
         List<Rebar> Rebars = new List<Rebar>();
-        List<Reference> References = new List<Reference>();
+        List<Autodesk.Revit.DB.Reference> References = new List<Autodesk.Revit.DB.Reference>();
         XYZ LeaderElbow;
         XYZ LeaderEnd;
         List<ElementId> ViewIds = new List<ElementId>();
@@ -52,7 +46,7 @@ namespace TFrame.Tag
                     {
                         Rebar rebar = (Rebar)selElem;
                         Rebars.Add(rebar);
-                        Reference reference = new Reference(rebar);
+                        Autodesk.Revit.DB.Reference reference = new Autodesk.Revit.DB.Reference(rebar);
                         References.Add(reference);
                     }
                     else if (cat.Name == strFramingCat.Name)
@@ -60,7 +54,7 @@ namespace TFrame.Tag
                         List<Rebar> rebars = tAct.CacheRebars(selElem, doc);
                         foreach (Rebar rebar in rebars)
                         {
-                            Reference reference = new Reference(rebar);
+                            Autodesk.Revit.DB.Reference reference = new Autodesk.Revit.DB.Reference(rebar);
                             References.Add(reference);
                         }
 
@@ -81,14 +75,14 @@ namespace TFrame.Tag
 
                 XYZ pnt = new XYZ(2.98836717912826, -16.6007517695874, LeaderElbow.Z - 0.030891335);
 
-                FamilyTools fa = new FamilyTools(commandData);
+                FamilyTools fa = new FamilyTools();
                 fa.SearchFamilySymbolByBuiltInCategory(BuiltInCategory.OST_RebarTags);
                 ElementId desiredFamily = fa.SearchFamilySymbolByBuiltInCategory(BuiltInCategory.OST_RebarTags)[2].Id;
 
                 using (Transaction t = new Transaction(doc, "Tag Rebars by Category"))
                 {
                     t.Start();
-                    foreach (Reference referenceToTag in References)
+                    foreach (Autodesk.Revit.DB.Reference referenceToTag in References)
                     {
                         foreach (ElementId ownerDBViewId in ViewIds)
                         {

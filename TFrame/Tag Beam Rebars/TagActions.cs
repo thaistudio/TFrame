@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI.Selection;
 
-using TFrame.TTools;
-using TFrame.Sections;
-
-namespace TFrame.Tag
+namespace TFrame
 {
     public class TagActions
     {
@@ -105,7 +100,7 @@ namespace TFrame.Tag
                                     leaderElbow = new XYZ(leaderEnd.X, leaderEnd.Y, leaderEnd.Z + (a + firstDimensionZ) * coeff);
                                     tagHeadPosition = GeometryTools.GetPointAtDistNormalToAVector(paraVector, leaderElbow, l * sideCoeff, leaderElbow.Z);
 
-                                    Reference reference = new Reference(rebar);
+                                Autodesk.Revit.DB.Reference reference = new Autodesk.Revit.DB.Reference(rebar);
 
                                     IndependentTag tagRebars = IndependentTag.Create(_doc, desiredFamily, section.ViewSection.Id, reference, true, TagOrientation.Horizontal, leaderEnd);
                                     tagRebars.LeaderEndCondition = LeaderEndCondition.Free;
@@ -204,7 +199,7 @@ namespace TFrame.Tag
                             XYZ leaderEnd = GeometryTools.GetPointAtDistNormalToAVector(paraVector, origin, d - stirrupTagLength * stirrupCoeff, origin.Z);
                             XYZ leaderElbow = leaderEnd; // geoTools.GetPointAtDistNormalToAVector(paraVector, origin, d, origin.Z);
 
-                            Reference reference = new Reference(stirrup);
+                        Autodesk.Revit.DB.Reference reference = new Autodesk.Revit.DB.Reference(stirrup);
 
                             IndependentTag tagRebars = IndependentTag.Create(_doc, stirrupDesiredFamily, section.ViewSection.Id, reference, true, TagOrientation.Horizontal, leaderEnd);
                             tagRebars.LeaderEndCondition = LeaderEndCondition.Free;
@@ -218,10 +213,9 @@ namespace TFrame.Tag
 
         public void LoadTagFamily()
         {
-            famTools = new FamilyTools(externalCommandData);
             string famName = "TDimTag";
             string tagPath = @"D:\Thai\Code\Revit\TFrame\TFamily\Single Rebar Tag\TDimTag.rfa";
-            if (!famTools.FamilyExists(famName)) _doc.LoadFamily(tagPath);
+            if (!FamilyTools.FamilyExists(famName)) _doc.LoadFamily(tagPath);
         }
 
         public XYZ GetTagHeadPosition(XYZ beamVector, XYZ lineOrigin, double l, double desiredZ)

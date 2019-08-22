@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 
-namespace TFrame.TTools
+namespace TFrame
 {
     class GeometryTools
     {
@@ -367,7 +367,7 @@ namespace TFrame.TTools
                     foreach (Face face in solid.Faces)
                     {
                         BoundingBoxUV boundingBoxUV = face.GetBoundingBox();
-                        Reference r = face.Reference;
+                        Autodesk.Revit.DB.Reference r = face.Reference;
                         UV max = boundingBoxUV.Max;
                         UV min = boundingBoxUV.Min;
                         Mesh mesh = face.Triangulate();
@@ -377,7 +377,7 @@ namespace TFrame.TTools
                     foreach (Edge edge in solid.Edges)
                     {
                         Curve curve = edge.AsCurve();
-                        Reference r = curve.Reference;
+                        Autodesk.Revit.DB.Reference r = curve.Reference;
                         Face face0 = edge.GetFace(0);
                         Face face1 = edge.GetFace(1);
                         IList<XYZ> tes = edge.Tessellate();

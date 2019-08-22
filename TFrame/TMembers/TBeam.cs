@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Autodesk.Revit.DB;
 
-namespace TFrame.TMembers
+namespace TFrame
 {
     public class TBeam
     {

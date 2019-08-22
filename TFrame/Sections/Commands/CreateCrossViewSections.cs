@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
 
-using TFrame.Sections;
-using TFrame.TTools;
 
 namespace TFrame
 {
@@ -22,6 +15,7 @@ namespace TFrame
 
         public List<View> templates;
         public List<ViewFamilyType> Sections;
+        public List<string> UniqueIds = new List<string>();
 
         bool IsBeam = true;
 
@@ -54,7 +48,6 @@ namespace TFrame
                 selBeams = selTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
                 while (selBeams.Count == 0) selBeams = selTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
                 
-
                 Initialize.InitializeDocument(doc);
 
                 // Collect section view tpyes
@@ -81,6 +74,7 @@ namespace TFrame
                 // Verify selections
                 foreach (Element elem in selBeams)
                 {
+                    UniqueIds.Add(elem.UniqueId);
                     hosts.Add(ElementTools.GetMark(elem));
                     cachedSections1Beam = secTool.CacheSections(elem, doc, SectionTools.SectionType.CrossSection);
                     cachedSectionsAllBeams.AddRange(cachedSections1Beam);

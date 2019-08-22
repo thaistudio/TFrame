@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
 
-namespace TFrame.Stamp_Beam_Marks
+namespace TFrame
 {
     /// <summary>
     /// This class holds settings from the UI and transfer them to command class

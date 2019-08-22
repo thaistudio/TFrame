@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 
-using TFrame.TTools;
-using TFrame.Stamp_Beam_Marks.Forms;
-
-namespace TFrame.Stamp_Beam_Marks
+namespace TFrame
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     public class BeamMarks : IExternalCommand

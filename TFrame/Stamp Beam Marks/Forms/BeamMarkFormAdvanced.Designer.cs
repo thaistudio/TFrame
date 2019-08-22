@@ -1,5 +1,5 @@
-﻿namespace TFrame.Stamp_Beam_Marks.Forms
-{
+﻿namespace TFrame
+{ 
     partial class BeamMarkFormAdvanced
     {
         /// <summary>

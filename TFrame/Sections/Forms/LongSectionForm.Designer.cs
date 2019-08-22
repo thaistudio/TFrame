@@ -1,4 +1,4 @@
-﻿namespace TFrame.Sections.Forms
+﻿namespace TFrame
 {
     partial class LongSectionForm
     {

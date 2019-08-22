@@ -8,9 +8,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB.Structure;
 
-using TFrame.Sections;
-
-namespace TFrame.TTools
+namespace TFrame
 {
     class RebarTools
     {

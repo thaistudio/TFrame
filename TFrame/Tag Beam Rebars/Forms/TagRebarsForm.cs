@@ -2,9 +2,7 @@
 using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
-using TFrame.TTools;
-
-namespace TFrame.Tag
+namespace TFrame
 {
     public partial class TagRebarsForm : System.Windows.Forms.Form
     {
@@ -26,7 +24,7 @@ namespace TFrame.Tag
             ftToMm = GlobalParams.FtToMm;
 
             Document doc = commandData.Application.ActiveUIDocument.Document;
-            _fa = new FamilyTools(commandData);
+            _fa = new FamilyTools();
             
             comboBox5.DataSource = _fa.SearchFamilyByBuiltInCat(BuiltInCategory.OST_RebarTags);
             comboBox5.DisplayMember = "Name";

@@ -7,9 +7,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 
-using TFrame.Sections;
-
-namespace TFrame.TTools
+namespace TFrame
 {
     public class SectionTools 
     {

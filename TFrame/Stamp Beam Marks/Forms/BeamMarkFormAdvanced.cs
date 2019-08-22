@@ -1,21 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
-using System.Xml.Serialization;
-using System.Reflection;
-
-using Autodesk.Revit.UI;
-using Autodesk.Revit.DB;
 using ComboBox = System.Windows.Forms.ComboBox;
 
-namespace TFrame.Stamp_Beam_Marks.Forms
+namespace TFrame
 {
     public partial class BeamMarkFormAdvanced : System.Windows.Forms.Form
     {
@@ -172,49 +161,9 @@ namespace TFrame.Stamp_Beam_Marks.Forms
             verSetting.Rule1 = SortingRule.LeftToRight;
             verSetting.Rule2 = (SortingRule)comboBox7.SelectedItem;
 
-            SaveSettings();
-        }
-
-        /// <summary>
-        /// Save settings to an xml file stored in savePath
-        /// </summary>
-        private void SaveSettings()
-        {
-            XmlDocument xmlDoc = new XmlDocument();
-            XmlNode beamMark = xmlDoc.CreateElement("beamMark");
-            xmlDoc.AppendChild(beamMark);
-            XmlNode verSettingNode = xmlDoc.CreateElement("setting");
-            foreach (Settings setting in _bm.settings)
-            {
-                XmlNode settingNode = xmlDoc.CreateElement("setting");
-                XmlAttribute settingAtt = xmlDoc.CreateAttribute("name");
-                settingAtt.Value = setting.SettingName;
-                settingNode.Attributes.Append(settingAtt);
-
-                XmlNode directionNode = xmlDoc.CreateElement("order");
-                directionNode.InnerText = setting.GetType().GetProperty("Rule2").GetValue(setting).ToString();
-                settingNode.AppendChild(directionNode);
-
-                int i = 0;
-                foreach (PartSetting ps in setting.PartSettings)
-                {
-                    XmlNode partNode = xmlDoc.CreateElement("part");
-                    XmlAttribute partAtt = xmlDoc.CreateAttribute("no");
-                    partAtt.Value = i.ToString();
-                    partNode.Attributes.Append(partAtt);
-                    i++;
-
-                    foreach (PropertyInfo prop in ps.GetType().GetProperties())
-                    {
-                        XmlNode propNode = xmlDoc.CreateElement(prop.Name);
-                        propNode.InnerText = prop.GetValue(ps).ToString();
-                        partNode.AppendChild(propNode);
-                    }
-                    settingNode.AppendChild(partNode);
-                }
-                beamMark.AppendChild(settingNode);
-            }
-            xmlDoc.Save(savePath);
+            //SaveSettings();
+            
+            DataTools.SaveWinFormUI(this, savePath);
         }
 
         /// <summary>
@@ -222,22 +171,7 @@ namespace TFrame.Stamp_Beam_Marks.Forms
         /// </summary>
         private void LoadSetting()
         {
-            XmlDocument xmlDoc = new XmlDocument();
-            if (!System.IO.Directory.Exists(savePath)) return;
-
-            xmlDoc.Load(savePath);
-            XmlNodeList indexList = xmlDoc.SelectNodes("//beamMark/setting/part/Index");
-            XmlNodeList textList = xmlDoc.SelectNodes("//beamMark/setting/part/Part");
-            XmlNodeList orderList = xmlDoc.SelectNodes("//beamMark/setting/order");
-
-            for (int i = 0; i < comboBoxes.Count; i++)
-            {
-                comboBoxes[i].SelectedIndex = Convert.ToInt32(indexList.Item(i).InnerText);
-                textBoxes[i].Text = textList.Item(i).InnerText; 
-            }
-
-            comboBox6.SelectedIndex = comboBox6.FindStringExact(orderList.Item(0).InnerText);
-            comboBox7.SelectedIndex = comboBox7.FindStringExact(orderList.Item(1).InnerText);
+            DataTools.LoadWinFormUI(this, savePath);
         }
 
         // Event zone

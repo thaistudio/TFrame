@@ -8,17 +8,15 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 
-namespace TFrame.TTools
+namespace TFrame
 {
     public class FamilyTools
     {
         Document _doc;
-        UIDocument _uiDoc;
 
-        public FamilyTools(ExternalCommandData commandData)
+        public FamilyTools()
         {
-            _doc = commandData.Application.ActiveUIDocument.Document;
-            _uiDoc = commandData.Application.ActiveUIDocument;
+            _doc = GlobalParams.Doc;
         }
 
         /// <summary>
@@ -141,9 +139,9 @@ namespace TFrame.TTools
             return ts;
         }
 
-        public bool FamilyExists(string familyName)
+        public static bool FamilyExists(string familyName)
         {
-            IEnumerable<Element> families = new FilteredElementCollector(_doc).OfClass(typeof(Family)).Where(x => x.Name == familyName);
+            IEnumerable<Element> families = new FilteredElementCollector(GlobalParams.Doc).OfClass(typeof(Family)).Where(x => x.Name == familyName);
             if (families.Count() > 0) return true;
             return false;
         }
@@ -175,6 +173,16 @@ namespace TFrame.TTools
                 if (e.Name == name) elems.Add(e);
             }
             return elems;
+        }
+
+        /// <summary>
+        /// Load a family
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="famName"></param>
+        public static void LoadFamily(string path, string famName = null)
+        {
+            if (!FamilyExists(famName)) GlobalParams.Doc.LoadFamily(path);
         }
     }
 }

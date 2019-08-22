@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 
-using TFrame.TTools;
-
-namespace TFrame.Sections
+namespace TFrame
 {
     public class SectionActions
     {

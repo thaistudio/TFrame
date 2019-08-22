@@ -11,7 +11,7 @@ using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.DB.ExtensibleStorage;
 
 
-namespace TFrame.TTools
+namespace TFrame
 {
     public class BeamTools 
     {
@@ -532,6 +532,11 @@ namespace TFrame.TTools
             return desiredFace;
         }
 
+        public static double GetBeamElevation(Element beam, BeamFace beamFace)
+        {
+            if (beamFace == BeamFace.Face2) return GetBeamEnds(beam)[0].Z;
+            else return GetBeamEnds(beam)[0].Z - GetBeamDims(beam)[1];
+        }
 
         /// <summary>
         /// Determine if this face is a side face a.k.a. not Face3 and Face4
@@ -648,14 +653,14 @@ namespace TFrame.TTools
                 Solid solid = (Solid)obj;
                 foreach (Face face in solid.Faces)
                 {
-                    Reference r = face.Reference;
+                    Autodesk.Revit.DB.Reference r = face.Reference;
                     Mesh mesh = face.Triangulate();
                     IList<XYZ> vertices = mesh.Vertices;
                 }
                 foreach (Edge edge in solid.Edges)
                 {
                     Curve curve = edge.AsCurve();
-                    Reference r = curve.Reference;
+                    Autodesk.Revit.DB.Reference r = curve.Reference;
                     Face face0 = edge.GetFace(0);
                     Face face1 = edge.GetFace(1);
                     IList<XYZ> tes = edge.Tessellate();
@@ -678,69 +683,6 @@ namespace TFrame.TTools
         P0, P1, P2, P3, P4, P5, P6, P7, P8
     }
 
-    public class TStoreData
-    {
-        public void AddInfoToElement<T>(Element e, T info, string fieldName, UnitType unitType, DisplayUnitType displayUnitType)
-        {
-
-            // Delete existing schemas
-            IList<Guid> existingGuids = e.GetEntitySchemaGuids();
-            if (existingGuids.Count > 0)
-            {
-                foreach (Guid existingGuid in existingGuids)
-                {
-                    Schema existingSchema = Schema.Lookup(existingGuid);
-                    Entity existingEntity = e.GetEntity(existingSchema);
-                    IList<Field> existingFields = existingSchema.ListFields();
-                    if (existingSchema.SchemaName == fieldName) e.DeleteEntity(existingSchema);
-                }
-            }
-            
-            // Add new schemas
-            Guid g = Guid.NewGuid();
-            SchemaBuilder schemaBuilder = new SchemaBuilder(g);
-            schemaBuilder.SetReadAccessLevel(AccessLevel.Public);
-            schemaBuilder.SetWriteAccessLevel(AccessLevel.Public);
-            schemaBuilder.SetVendorId("THAISTUDIO");
-
-            //Create a field
-            FieldBuilder field = schemaBuilder.AddSimpleField(fieldName, typeof(T));
-            field.SetDocumentation(fieldName);
-            
-            schemaBuilder.SetSchemaName(fieldName);
-
-            if (info is double) field.SetUnitType(unitType);
-
-           
-            Schema schema = schemaBuilder.Finish();
-
-            Entity entity = new Entity(schema);
-
-            //Get the filed from the schema
-            Field getField = schema.GetField(fieldName);
-
-            if (info is string) entity.Set(getField, info, DisplayUnitType.DUT_UNDEFINED);
-            else if (!(info is string)) entity.Set(getField, info, displayUnitType);
-
-            e.SetEntity(entity);
-        }
-
-        public T GetInfoFromElement<T>(Element e, string fieldName, DisplayUnitType displayUnitType)
-        {
-            T v = default(T);
-            var schemaGuids = e.GetEntitySchemaGuids();
-            foreach (Guid schemaGuid in schemaGuids)
-            {
-                Schema schema = Schema.Lookup(schemaGuid);
-                if (schema.SchemaName == fieldName)
-                {
-                    v = e.GetEntity(schema).Get<T>(fieldName, displayUnitType);
-                    break;
-                }
-                else v = default(T);
-            }
-            return v;
-        }
-    }
+    
 }
 

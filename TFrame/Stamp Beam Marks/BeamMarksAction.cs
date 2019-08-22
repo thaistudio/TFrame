@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 
-using TFrame.TTools;
-
-namespace TFrame.Stamp_Beam_Marks
+namespace TFrame
 {
     // Definitions:
     // Group: 1 group is a row or column of beams

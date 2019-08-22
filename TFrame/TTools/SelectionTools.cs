@@ -8,8 +8,8 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 
-namespace TFrame.TTools
-{
+namespace TFrame
+{ 
     public class SelectionTools
     {
         ExternalCommandData _commandData;
@@ -36,13 +36,13 @@ namespace TFrame.TTools
         }
 
         /// <summary>
-        /// Use this method to filter elements of a category from selections (i.e. filter beams)
+        /// Use this method to filter elements of a category from selections (i.e. select beams only)
         /// </summary>
         /// <param name="commandData"></param>
         /// <returns></returns>
         public List<Element> GetElemsOfCatFromSelection(BuiltInCategory category)
         {
-            fTools = new FamilyTools(_commandData);
+            fTools = new FamilyTools();
             List<Element> elems = new List<Element>();
             foreach (ElementId id in _uiDoc.Selection.GetElementIds())
             {
@@ -60,7 +60,7 @@ namespace TFrame.TTools
 
         public List<Element> GetElemsOfCatFromList(List<Element> elems, BuiltInCategory category)
         {
-            fTools = new FamilyTools(_commandData);
+            fTools = new FamilyTools();
             List<Element> list = new List<Element>();
             foreach (Element elem in elems)
             {
@@ -89,8 +89,8 @@ namespace TFrame.TTools
         {
             Document doc = uiDoc.Document;
             List<Element> elems = new List<Element>();
-            IList<Reference> references = _uiDoc.Selection.PickObjects(ObjectType.Element, "Please select beams!");
-            foreach (Reference reference in references)
+            IList<Autodesk.Revit.DB.Reference> references = _uiDoc.Selection.PickObjects(ObjectType.Element, "Please select beams!");
+            foreach (Autodesk.Revit.DB.Reference reference in references)
             {
                 Element elem = doc.GetElement(reference);
                 elems.Add(elem);

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Autodesk.Revit.DB;
 
-namespace TFrame.Sections
+namespace TFrame
 {
-  
-
     public class Section
     {
         private double _L;
@@ -74,6 +73,35 @@ namespace TFrame.Sections
         public double XMinManual { get; set; } = 2;
         public double YMinManual { get; set; } = 2;
         public double ZMinManual { get; set; } = 2;
+
+        // These are the properties needed for dimensioning the section
+        public List<DimensionSet> DimensionSets { get; set; }
+        public Element HostElement { get; set; }
+        public View RevitView { get; set; }
+        public string Name { get; set; }
+        public BoundingBoxXYZ ViewerBoundingBox { get; set; }
+        public Element Viewer { get; set; }
+
+        public void SetDimensionProperties()
+        {
+            DimensionSets = new List<DimensionSet>();
+            Name = ViewSection.Name;
+            RevitView = ViewSection;
+            HostElement = ElementTools.GetElementByMarkInView(ViewSection.LookupParameter("T_Mark").AsString(), ViewSection);
+            Viewer = new FilteredElementCollector(ViewSection.Document).OfCategory(BuiltInCategory.OST_Viewers).Where(x => x.Name == Name).FirstOrDefault();
+
+            Transaction t = new Transaction(ViewSection.Document);
+            t.Start("CropBox");
+            ViewSection.CropBoxVisible = true; // Crop box has to be visible to get viewer's bounding box
+            t.Commit();
+
+            ViewerBoundingBox = Viewer.get_BoundingBox(ViewSection);
+        }
+
+        public void AddDimensionSet(DimensionSet dimensionSet)
+        {
+            DimensionSets.Add(dimensionSet);
+        }
     }
 
     public class FieldClass // Everything shown in the form is from this class

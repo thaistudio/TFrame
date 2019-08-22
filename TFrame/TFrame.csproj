@@ -59,11 +59,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CreateDimensions\Commands\cmdDimension.cs" />
-    <Compile Include="CreateDimensions\DimensionAction.cs" />
+    <Compile Include="CreateDimensions\Data\BeamDimensionData.cs" />
+    <Compile Include="CreateDimensions\DimensionActions.cs" />
     <Compile Include="CreateDimensions\Forms\BaseWindowWPF.cs" />
     <Compile Include="CreateDimensions\Forms\BeamDimUC.xaml.cs">
       <DependentUpon>BeamDimUC.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CreateDimensions\DimensionSet.cs" />
+    <Compile Include="CreateDimensions\DimensionableReference.cs" />
+    <Compile Include="CreateDimensions\TView.cs" />
     <Compile Include="Experiments\StampBeamsID.cs" />
     <Compile Include="Sections\Commands\DeleteSections.cs" />
     <Compile Include="Sections\Forms\BoundingBoxSizingFormAuto.cs">
@@ -109,7 +113,12 @@
     <Compile Include="TMembers\TBeam.cs" />
     <Compile Include="To be finished\CreateRebar.cs" />
     <Compile Include="Sections\Commands\CreateCrossViewSections.cs" />
-    <Compile Include="TTools\DataTools.cs" />
+    <Compile Include="TTools\Data\DataBinding.cs" />
+    <Compile Include="TTools\Data\RevitData.cs" />
+    <Compile Include="TTools\TCommand.cs" />
+    <Compile Include="TTools\TestCommand.cs" />
+    <Compile Include="TTools\Data\WPFDataTools.cs" />
+    <Compile Include="TTools\Data\DataTools.cs" />
     <Compile Include="TTools\ElementTools.cs" />
     <Compile Include="TTools\FamilyTools.cs" />
     <Compile Include="TTools\GeometryTools.cs" />
@@ -176,6 +185,9 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="UI\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

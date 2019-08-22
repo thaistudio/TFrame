@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
 
-using TFrame.Sections;
-
 namespace TFrame
 {
     public partial class BoundingBoxSizingFormAuto : Form

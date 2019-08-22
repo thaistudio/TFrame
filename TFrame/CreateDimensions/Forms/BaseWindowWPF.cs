@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-
-namespace TFrame.CreateDimensions.Forms
+using System.Windows.Forms;
+namespace TFrame
 {
     public class BaseWindowWPF : Window, IDisposable
     {

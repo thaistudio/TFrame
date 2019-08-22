@@ -1,4 +1,4 @@
-﻿namespace TFrame.Tag
+﻿namespace TFrame
 {
     partial class TagRebarsForm
     {
