@@ -1,5 +1,6 @@
 ﻿using System.Windows;
-
+using System.Windows.Forms;
+using SaveLoadUI;
 using Autodesk.Revit.DB;
 
 namespace TFrame
@@ -20,7 +21,9 @@ namespace TFrame
             rd.GenList<DimensionType>();
             dimStyleComboBox.ItemsSource = rd.LinearDimensioTypes;
 
-            WPFDataTools.LoadWinFormUI(this, path);
+            WPF.LoadWinFormUI(this, path);
+            WPF.LoadComboBoxItemsSource(this, path);
+            if (breakLineFamDirectory.Items.IsEmpty) breakLineFamDirectory.Items.Add(GlobalParams.BreakLineDirectory);
         }
 
         void Initialize()
@@ -31,13 +34,23 @@ namespace TFrame
 
         private void OKBtn_Click(object sender, RoutedEventArgs e)
         {
-            WPFDataTools.SaveWinFormUI(this, path);
+            WPF.SaveWinFormUI(this, path);
             Close();
         }
 
         private void CancelBtn_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void BrowseBtn_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog folderBrowserDialog = new OpenFileDialog();
+            if (folderBrowserDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                breakLineFamDirectory.Items.Add(folderBrowserDialog.FileName);
+                breakLineFamDirectory.Text = folderBrowserDialog.FileName;
+            }
         }
     }
 }

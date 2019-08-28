@@ -67,7 +67,7 @@ namespace TFrame
         /// <param name="list"></param>
         /// <param name="comapredMember"></param>
         /// <returns></returns>
-        public bool ListMemberExists<T>(List<T> list, T comapredMember)
+        public static bool ListMemberExists<T>(List<T> list, T comapredMember)
         {
             bool b = false;
             if (list.Count == 0) b = false;

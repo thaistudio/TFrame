@@ -13,7 +13,19 @@ namespace TFrame
 
         }
 
+        public static void DetailSection(Section section)
+        {
+            Transaction t = new Transaction(section.ViewSection.Document);
+            t.Start("Create Dimension");
 
+            FindReferenceInView(section, UVPosition.Left);
+            FindReferenceInView(section, UVPosition.Right);
+            FindReferenceInView(section, UVPosition.Down);
+            CreateDimension(section);
+
+            section.ViewSection.CropBoxVisible = false;
+            t.Commit();
+        }
 
         public static void FindReferenceInView(Section section, UVPosition uvPos)
         {
@@ -24,7 +36,7 @@ namespace TFrame
             viewHostElementId.Clear();
             viewHostElementId.Add(section.HostElement.Id);
             FilteredElementCollector otherBeamsInView = 
-                new FilteredElementCollector(GlobalParams.Doc, view.Id).Excluding(viewHostElementId).OfCategory(BuiltInCategory.OST_StructuralFraming); // Get other beams rather than host elem in view
+                new FilteredElementCollector(GlobalParams.Doccument, view.Id).Excluding(viewHostElementId).OfCategory(BuiltInCategory.OST_StructuralFraming); // Get other beams rather than host elem in view
 
             DimensionSet dimensionSet = new DimensionSet(section, uvPos);
 
@@ -102,8 +114,6 @@ namespace TFrame
             else
             {
                 // Create a dummy point 100mm from host beam's left edge to check if this beam is left or right
-                var v = UnitUtils.ConvertToInternalUnits(0.1, DisplayUnitType.DUT_METERS);
-                var v2 = BeamTools.GetBeamDims(beam)[0];
                 dummyPoint = GeometryTools.GetPointParallelToLineAtDistance
                     (new XYZ(), horizontalVector, section.ViewerBoundingBox.Max, section.XMaxExtra + BeamTools.GetBeamDims(section.HostElement)[0] + UnitUtils.ConvertToInternalUnits(0.05, DisplayUnitType.DUT_METERS));
             }
@@ -119,18 +129,40 @@ namespace TFrame
 
             foreach (DimensionSet dimensionSet in section.DimensionSets)
             {
-                Line line = SetDimensionLine(dimensionSet);
+                Line line = CreateDimensionLine(dimensionSet, false);
                 ReferenceArray referenceArray = new ReferenceArray();
                 foreach (DimensionableReference reference in dimensionSet.References)
                 {
                     referenceArray.Append(reference.RevitReference);
                 }
+
                 Dimension dimension = doc.Create.NewDimension(section.ViewSection, line, referenceArray);
+
+                if (dimensionSet.HasOverallDimension)
+                {
+                    ReferenceArray overallReferences = new ReferenceArray();
+                    List<DimensionableReference> overallDimensionableReferences = dimensionSet.References.OrderBy(x => x.FaceElevation).ToList();
+                    for (int i = 0; i < overallDimensionableReferences.Count; i++)
+                    {
+                        if (i == 0 || i == overallDimensionableReferences.Count - 1) overallReferences.Append(overallDimensionableReferences[i].RevitReference);
+                    }
+
+                    line = CreateDimensionLine(dimensionSet, true);
+                    Dimension overallDimension = doc.Create.NewDimension(section.ViewSection, line, overallReferences);
+                    overallDimension.DimensionType = BeamDimensionData.Singleton.DimensionType;
+                }
                 dimension.DimensionType = BeamDimensionData.Singleton.DimensionType;
+                var l = dimension.DimensionType.Name;
             }
         }
 
-        static Line SetDimensionLine(DimensionSet dimensionSet)
+        /// <summary>
+        /// Create line for dimensions
+        /// </summary>
+        /// <param name="dimensionSet"></param>
+        /// <param name="dimensionsSpacing">Spacing betwwen 2 dimensions in case there are more than 1 dim</param>
+        /// <returns></returns>
+        static Line CreateDimensionLine(DimensionSet dimensionSet, bool isOverallDimension)
         {
             Line line = null;
 
@@ -141,7 +173,7 @@ namespace TFrame
             XYZ downDirection = new XYZ(0, 0, -1);
             XYZ upDirection = new XYZ(0, 0, 1);
             XYZ secondPoint = null;
-            XYZ firstPoint = CalculateDimensionOrigin(dimensionSet);
+            XYZ firstPoint = CalculateDimensionOrigin(dimensionSet, isOverallDimension);
             if (uvPos == UVPosition.Left)
             {
                 secondPoint = GeometryTools.GetPointParallelToLineAtDistance
@@ -163,9 +195,12 @@ namespace TFrame
             return line;
         }
 
-        static XYZ CalculateDimensionOrigin(DimensionSet dimensionSet)
+        static XYZ CalculateDimensionOrigin(DimensionSet dimensionSet, bool isOverallDimension)
         {
             XYZ origin = null;
+
+            double dimensionSpacing = 0;
+            if (isOverallDimension) dimensionSpacing = dimensionSet.DimensionsSpacing;
 
             // Get needed properties
             Section section = dimensionSet.Section;
@@ -177,7 +212,6 @@ namespace TFrame
 
             // Calculate beam dimensions
             Element hostBeam = section.HostElement;
-            double hostWidth = BeamTools.GetBeamDims(hostBeam)[0];
             
             // Calculate the distance from the edge of the host beam to the bounding box boudary
             //double edgeToBoundingBox;
@@ -185,12 +219,12 @@ namespace TFrame
             if (uvPos == UVPosition.Left)
             {
                 //edgeToBoundingBox = section.XMaxExtra - hostWidth / 2;
-                origin = GeometryTools.GetPointParallelToLineAtDistance(horzVector, coorOrigin, section.ViewerBoundingBox.Max, .5); // dimToBeamEdge - edgeToBoundingBox);
+                origin = GeometryTools.GetPointParallelToLineAtDistance(horzVector, coorOrigin, section.ViewerBoundingBox.Max, .5 + dimensionSpacing); // dimToBeamEdge - edgeToBoundingBox);
             }
             else if (uvPos == UVPosition.Right)
             {
                 //edgeToBoundingBox = section.XMinExtra - hostWidth / 2;
-                origin = GeometryTools.GetPointParallelToLineAtDistance(coorOrigin, horzVector, section.ViewerBoundingBox.Min, .5); // dimToBeamEdge - edgeToBoundingBox);
+                origin = GeometryTools.GetPointParallelToLineAtDistance(coorOrigin, horzVector, section.ViewerBoundingBox.Min, .5 + dimensionSpacing); // dimToBeamEdge - edgeToBoundingBox);
             }
 
             return origin;
@@ -202,8 +236,7 @@ namespace TFrame
             XYZ coorOrigin = new XYZ();
             
             // Load break line family
-            string path = @"";
-            //FamilyTools.LoadFamily(path);
+            FamilyTools.LoadFamily(BeamDimensionData.Singleton.BreakLineFamilyDirectory);
 
             Section section = dimensionSet.Section;
             int positionCoefficient = 1; // 1 when on right, -1 on left
@@ -232,13 +265,14 @@ namespace TFrame
                 origin = GeometryTools.GetPointParallelToLineAtDistance(XYZ.Zero, XYZ.BasisZ, movedPoint, midElevToBbBoundary);
             }
 
-            // Find the break line symbol
-            IEnumerable<Element> breakLineFilter = new FilteredElementCollector(GlobalParams.Doc)
-                .OfClass(typeof(FamilyInstance)).WhereElementIsNotElementType().Where(x => ((FamilyInstance)x).Symbol.Name == "M_Break Line");
-            FamilyInstance instance = (FamilyInstance)(breakLineFilter.FirstOrDefault());
-            FamilySymbol symbol = instance.Symbol;
+            // Find the break line symbol and activate it
+            IEnumerable<Element> symbolFilter = new FilteredElementCollector(GlobalParams.Doccument)
+                .OfClass(typeof(FamilySymbol)).Where(x => x.Name == "M_Break Line");
+            FamilySymbol symbol = (FamilySymbol)(symbolFilter.FirstOrDefault());
+            symbol.Activate();
 
-            FamilyInstance breakLine = GlobalParams.Doc.Create.NewFamilyInstance(origin, symbol, section.ViewSection);
+            // Place instance
+            FamilyInstance breakLine = GlobalParams.Doccument.Create.NewFamilyInstance(origin, symbol, section.ViewSection);
 
             // Rotate break line
             // Center line to rotate

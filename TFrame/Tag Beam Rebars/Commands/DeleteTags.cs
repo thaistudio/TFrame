@@ -19,10 +19,8 @@ namespace TFrame
                 Document doc = uiDoc.Document;
                 Selection sel = uiDoc.Selection;
 
-                BeamTools btools = new BeamTools();
-                SelectionTools selTools = new SelectionTools(commandData);
-                List<Element> selBeams = selTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
-                while (selBeams.Count == 0) selBeams = selTools.UrgePickSelection(uiDoc);
+                List<Element> selBeams = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
+                while (selBeams.Count == 0) selBeams = SelectionTools.UrgePickSelection(uiDoc);
 
                 using (Transaction t = new Transaction(doc, "Delete Rebars"))
                 {
@@ -30,7 +28,7 @@ namespace TFrame
 
                     foreach (Element e in selBeams)
                     {
-                        List<Rebar> rebars = btools.CacheRebars(e, doc);
+                        List<Rebar> rebars = BeamTools.CacheRebars(e, doc);
                         foreach (Rebar rebar in rebars)
                         {
                             List<IndependentTag> indTags = CacheIndepentTags(doc, rebar);

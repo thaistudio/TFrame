@@ -86,7 +86,9 @@ namespace TFrame
 
         void GlobalInit()
         {
-            GlobalParams.Doc = doc;
+            GlobalParams.Doccument = doc;
+            GlobalParams.ExternalCommandData = commandData;
+            GlobalParams.UIDocument = uiDoc;
         }
     }
 

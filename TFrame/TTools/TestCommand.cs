@@ -21,13 +21,29 @@ namespace TFrame
         protected override Result MainMethod()
         {
             Selection sel = uiDoc.Selection;
-
-
             ElementId id = sel.GetElementIds().FirstOrDefault();
             Element e = doc.GetElement(id);
-            var v = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Views).Where(x => x.Name == "Section 50").FirstOrDefault();
-            BoundingBoxXYZ b1 = e.get_BoundingBox(doc.ActiveView);
-            BoundingBoxXYZ b2 = e.get_BoundingBox((View)v);
+
+            ScheduleSheetInstance ins = (ScheduleSheetInstance)e;
+            var l = ins.GetSubelements();
+
+            ElementId scheduleId = ins.ScheduleId;
+            ViewSchedule masterSchedule = (ViewSchedule)(doc.GetElement(scheduleId));
+            TableData tableData = masterSchedule.GetTableData();
+
+            TableSectionData tsd1 = tableData.GetSectionData(SectionType.Body);
+            TableSectionData tsd2 = tableData.GetSectionData(SectionType.Footer);
+            TableSectionData tsd3 = tableData.GetSectionData(SectionType.Header);
+            TableSectionData tsd4 = tableData.GetSectionData(SectionType.Summary);
+            TableSectionData tsd5 = tableData.GetSectionData(SectionType.None);
+
+            ScheduleDefinition scheDef = masterSchedule.Definition;
+            IList<ScheduleFieldId> fieldIds = scheDef.GetFieldOrder();
+            foreach (ScheduleFieldId fieldId in fieldIds)
+            {
+                ScheduleField scheField = scheDef.GetField(fieldId);
+            }
+
             return Result.Succeeded;
         }
     }

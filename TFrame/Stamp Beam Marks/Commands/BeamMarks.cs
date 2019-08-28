@@ -21,11 +21,10 @@ namespace TFrame
                 _commandData = commandData;
                 doc = commandData.Application.ActiveUIDocument.Document;
 
-                SelectionTools selTools = new SelectionTools(commandData);
                 BeamMarksAction bmAction = new BeamMarksAction(commandData);
 
-                selBeams = selTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
-                while (selBeams.Count == 0) selBeams = selTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
+                selBeams = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
+                while (selBeams.Count == 0) selBeams = SelectionTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
 
                 BeamMarkFormAdvanced formAdvanced = new BeamMarkFormAdvanced(this);
                 formAdvanced.ShowDialog();

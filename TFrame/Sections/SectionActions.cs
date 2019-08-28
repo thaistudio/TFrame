@@ -10,14 +10,12 @@ namespace TFrame
         ExternalCommandData _externalCommandData;
         Document _doc;
         UIDocument _uiDoc;
-        SectionTools sTools;
 
         public SectionActions(ExternalCommandData externalCommandData)
         {
             _externalCommandData = externalCommandData;
             _uiDoc = externalCommandData.Application.ActiveUIDocument;
             _doc = _uiDoc.Document;
-            sTools = new SectionTools(_externalCommandData);
         }
 
         BeamTools bTools = new BeamTools();
@@ -27,7 +25,7 @@ namespace TFrame
         /// <summary>
         /// This method get 2 ends of the line that origin runs 
         /// </summary>
-        public List<XYZ> GetOriginLine(Element e)
+        static public List<XYZ> GetOriginLine(Element e)
         {
             List<XYZ> originLine = new List<XYZ>();
             List<XYZ> boundingPoints = BeamTools.GetBeamBoundingPoints(e);
@@ -42,18 +40,18 @@ namespace TFrame
             return originLine;
         }
 
-        public XYZ GetSectionOriginByOffset(Element e, double offset)
+        static public XYZ GetSectionOriginByOffset(Element e, double offset)
         {
             XYZ p0 = GetOriginLine(e)[0];
             XYZ p1 = GetOriginLine(e)[1];
             XYZ originNoOffset = GeometryTools.GetMidPoint(p0, p1);
-            XYZ paramVector = bTools.GetUnitNormalVector(p0, p1);
+            XYZ paramVector = BeamTools.GetUnitNormalVector(p0, p1);
             XYZ originWithOffset = GeometryTools.GetPointAtDistNormalToAVector(paramVector, originNoOffset, -offset, p0.Z);
 
             return originWithOffset;
         }
 
-        public void BoundingBoxTransform(Element e, Section section)
+        static public void BoundingBoxTransform(Element e, Section section)
         {
             XYZ p0 = GetOriginLine(e)[0];
             XYZ p1 = GetOriginLine(e)[1];
@@ -63,17 +61,17 @@ namespace TFrame
             trans = Transform.Identity;
             trans.Origin = section.Origin;
             trans.BasisY = new XYZ(0, 0, 1);
-            trans.BasisZ = sTools.GetBasisZ(p0, p1);
-            trans.BasisX = sTools.GetBasisX(trans.BasisZ);
+            trans.BasisZ = SectionTools.GetBasisZ(p0, p1);
+            trans.BasisX = SectionTools.GetBasisX(trans.BasisZ);
             section.Tran = trans;
         }
 
-        public void DefineSection(Element e, Section section)
+        static public void DefineSection(Element e, Section section)
         {
             BoundingBoxTransform(e, section);
             BoundingBoxXYZ bb = new BoundingBoxXYZ();
             bb.Enabled = true;
-            sTools.GetBBCoordinates(e, section, bb);
+            SectionTools.GetBBCoordinates(e, section, bb);
             bb.Transform = section.Tran;
             section.BoundingBox = bb;
         }

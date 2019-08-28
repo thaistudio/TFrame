@@ -6,7 +6,6 @@ namespace TFrame
 {
     public partial class TagRebarsForm : System.Windows.Forms.Form
     {
-        FamilyTools _fa;
         ExternalCommandData _externalCommandData;
         TagActions _tagAction;
         double ftToMm;
@@ -24,22 +23,21 @@ namespace TFrame
             ftToMm = GlobalParams.FtToMm;
 
             Document doc = commandData.Application.ActiveUIDocument.Document;
-            _fa = new FamilyTools();
             
-            comboBox5.DataSource = _fa.SearchFamilyByBuiltInCat(BuiltInCategory.OST_RebarTags);
+            comboBox5.DataSource = FamilyTools.SearchFamilyByBuiltInCat(BuiltInCategory.OST_RebarTags);
             comboBox5.DisplayMember = "Name";
 
-            comboBox6.DataSource = _fa.SearchFamilyByBuiltInCat(BuiltInCategory.OST_RebarTags);
+            comboBox6.DataSource = FamilyTools.SearchFamilyByBuiltInCat(BuiltInCategory.OST_RebarTags);
             comboBox6.DisplayMember = "Name";
 
-            comboBox8.DataSource = _fa.SearchFamilyByBuiltInCat(BuiltInCategory.OST_RebarTags);
+            comboBox8.DataSource = FamilyTools.SearchFamilyByBuiltInCat(BuiltInCategory.OST_RebarTags);
             comboBox8.DisplayMember = "Name";
 
-            List<Element> l = _fa.SearchFamilySymbolAsElements<MultiReferenceAnnotationType>(true);
+            List<Element> l = FamilyTools.SearchFamilySymbolAsElements<MultiReferenceAnnotationType>(true);
             comboBox2.DataSource = l;
             comboBox2.DisplayMember = "Name";
 
-            List<Element> dimensionStyle = _fa.SearchFamilySymbolOfFamilyName<DimensionType>("Linear Dimension Style");
+            List<Element> dimensionStyle = FamilyTools.SearchFamilySymbolOfFamilyName<DimensionType>("Linear Dimension Style");
             comboBox3.DataSource = dimensionStyle;
             comboBox3.DisplayMember = "Name";
 
@@ -78,19 +76,19 @@ namespace TFrame
 
         private void comboBox5_SelectedIndexChanged(object sender, EventArgs e)
         {
-            comboBox1.DataSource = _fa.SearchFamilySymbolByFamily((Family)comboBox5.SelectedItem);
+            comboBox1.DataSource = FamilyTools.SearchFamilySymbolByFamily((Family)comboBox5.SelectedItem);
             comboBox1.DisplayMember = "Name";
         }
 
         private void comboBox6_SelectedIndexChanged(object sender, EventArgs e)
         {
-            comboBox4.DataSource = _fa.SearchFamilySymbolByFamily((Family)comboBox6.SelectedItem);
+            comboBox4.DataSource = FamilyTools.SearchFamilySymbolByFamily((Family)comboBox6.SelectedItem);
             comboBox4.DisplayMember = "Name";
         }
 
         private void comboBox8_SelectedIndexChanged(object sender, EventArgs e)
         {
-            comboBox7.DataSource = _fa.SearchFamilySymbolByFamily((Family)comboBox8.SelectedItem);
+            comboBox7.DataSource = FamilyTools.SearchFamilySymbolByFamily((Family)comboBox8.SelectedItem);
             comboBox7.DisplayMember = "Name";
         }
 

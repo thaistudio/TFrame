@@ -20,36 +20,24 @@ namespace TFrame
            
         protected override Result MainMethod()
         {
-            SelectionTools selTools = new SelectionTools(commandData);
             var v = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Viewers).Where(x => x.Name == "Section 50");
             // Urge users to select beams
-            selBeams = selTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
-            while (selBeams.Count == 0) selBeams = selTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
+            selBeams = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
+            while (selBeams.Count == 0) selBeams = SelectionTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
+
+            // UI
+            BeamDimUC form = new BeamDimUC(doc);
+            form.ShowDialog();
 
             // Main actions
             foreach (Element beam in selBeams)
             {
-                BeamDimUC form = new BeamDimUC(doc);
-                form.ShowDialog();
-                SectionTools sTools = new SectionTools(commandData);
-                List<Section> sections = sTools.CacheSections(beam, doc, SectionTools.SectionType.CrossSection);
-                DimensionActions dimActions = new DimensionActions();
-
+                List<Section> sections = SectionTools.CacheSections(beam, doc, SectionTools.SectionType.CrossSection);
+                
                 foreach (Section section in sections)
                 {
                     section.SetDimensionProperties();
-
-                    Transaction t = new Transaction(doc);
-                    t.Start("Create Dimension");
-                    DimensionActions.FindReferenceInView(section, UVPosition.Left);
-                    DimensionActions.FindReferenceInView(section, UVPosition.Right);
-                    DimensionActions.FindReferenceInView(section, UVPosition.Down);
-
-                   
-                    DimensionActions.CreateDimension(section);
-
-                    section.ViewSection.CropBoxVisible = false;
-                    t.Commit();
+                    DimensionActions.DetailSection(section);                   
                 }
             }
             return Result.Succeeded;

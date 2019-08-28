@@ -11,8 +11,8 @@ namespace TFrame
 {
     public class SectionTools 
     {
-        string TName = "T_SectionName";
-        string ViewSectionName = "View Name";
+        static string TName = "T_SectionName";
+        static string ViewSectionName = "View Name";
 
         ExternalCommandData _commandData;
 
@@ -52,7 +52,7 @@ namespace TFrame
         /// </summary>
         /// <param name="uidoc"></param>
         /// <param name="Mark"></param>
-        public List<Section> CacheSections(Element beam, Document doc, SectionType sectionType)
+        public static List<Section> CacheSections(Element beam, Document doc, SectionType sectionType)
         {
             List<Section> CachedSections = new List<Section>();
             string mark = ElementTools.GetMark(beam);
@@ -67,7 +67,7 @@ namespace TFrame
 
                     if (!vs.IsTemplate)
                     {
-                        var v1 = tData.GetInfoFromElement<string>(vs, "Direction", DisplayUnitType.DUT_UNDEFINED);
+                        var v1 = DataTools.GetInfoFromElement<string>(vs, "Direction", DisplayUnitType.DUT_UNDEFINED);
                         if (v1 != null && v1 == "CrossSection" && sectionType == SectionType.CrossSection)
                         {
                             var b = vs.get_BoundingBox(doc.ActiveView);
@@ -94,11 +94,11 @@ namespace TFrame
                         else if (v1 != null && v1 == "LongSection" && sectionType == SectionType.LongSection)
                         {
                             int r = vs.GetEntitySchemaGuids().Count;
-                            string offset = tData.GetInfoFromElement<string>(vs, "Offset", DisplayUnitType.DUT_UNDEFINED);
-                            string viewFamType = tData.GetInfoFromElement<string>(vs, "ViewFamilyType", DisplayUnitType.DUT_UNDEFINED);
-                            string template = tData.GetInfoFromElement<string>(vs, "Template", DisplayUnitType.DUT_UNDEFINED);
+                            string offset = DataTools.GetInfoFromElement<string>(vs, "Offset", DisplayUnitType.DUT_UNDEFINED);
+                            string viewFamType = DataTools.GetInfoFromElement<string>(vs, "ViewFamilyType", DisplayUnitType.DUT_UNDEFINED);
+                            string template = DataTools.GetInfoFromElement<string>(vs, "Template", DisplayUnitType.DUT_UNDEFINED);
                             string viewSectionName = vs.Name;
-                            string host = tData.GetInfoFromElement<string>(vs, "Host", DisplayUnitType.DUT_UNDEFINED);
+                            string host = DataTools.GetInfoFromElement<string>(vs, "Host", DisplayUnitType.DUT_UNDEFINED);
 
                             CachedSection.Offset = Convert.ToDouble(offset);
                             CachedSection.ViewFamilyType = (ViewFamilyType)(FamilyTools.GetTypeInstanceByName<ViewFamilyType>(viewFamType, doc).FirstOrDefault());
@@ -117,7 +117,7 @@ namespace TFrame
 
         
 
-        void RetrieveSectionOriginLocation(Element e, Section section)
+        static void RetrieveSectionOriginLocation(Element e, Section section)
         {
             Section CachedSection = section;
             ViewSection vs = CachedSection.ViewSection;
@@ -126,9 +126,8 @@ namespace TFrame
             XYZ OMin = vs.CropBox.Min;
 
             // Get midline of the selected beam(s)
-            BeamTools tAct = new BeamTools();
-            XYZ p0 = tAct.GetBeamMidLine(e)[0];
-            XYZ p1 = tAct.GetBeamMidLine(e)[1];
+            XYZ p0 = BeamTools.GetBeamMidLine(e)[0];
+            XYZ p1 = BeamTools.GetBeamMidLine(e)[1];
 
             //// Get all corners of the crop section top and bot surfaces. There are 4 cases corresponding to 4 way a beam can be orientated
             XYZ Ovs = vs.Origin; // The origin from vs, this one is not the one I set in BoundingBoxTransform(). vs is the cached section
@@ -202,8 +201,8 @@ namespace TFrame
                 XYZ CachedOrigin = new XYZ(xO, yO, zO);
                 CachedSection.Origin = CachedOrigin;
 
-                CachedSection.d = Math.Round((new XYZ(xO, yO, p1.Z)).DistanceTo(p0) * FtToMm, 2);
-                CachedSection.L = Math.Abs((double)Math.Round(p0.DistanceTo(p1) * FtToMm / CachedSection.d, 2));
+                CachedSection.d = Math.Round((UnitUtils.ConvertFromInternalUnits((new XYZ(xO, yO, p1.Z)).DistanceTo(p0), DisplayUnitType.DUT_MILLIMETERS)), 2);
+                CachedSection.L = Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
             }
 
             // Case 2: p0/p1
@@ -263,8 +262,8 @@ namespace TFrame
                 XYZ CachedOrigin = new XYZ(xO, yO, zO);
                 CachedSection.Origin = CachedOrigin;
 
-                CachedSection.d = Math.Round((new XYZ(xO, yO, p1.Z)).DistanceTo(p0) * FtToMm, 2);
-                CachedSection.L = Math.Abs((double)Math.Round(p0.DistanceTo(p1) * FtToMm / CachedSection.d, 2));
+                CachedSection.d = Math.Round((UnitUtils.ConvertFromInternalUnits((new XYZ(xO, yO, p1.Z)).DistanceTo(p0), DisplayUnitType.DUT_MILLIMETERS)), 2);
+                CachedSection.L = Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
             }
 
             // Case 3: p0\p1
@@ -323,8 +322,8 @@ namespace TFrame
                 XYZ CachedOrigin = new XYZ(xO, yO, zO);
                 CachedSection.Origin = CachedOrigin;
 
-                CachedSection.d = Math.Round((new XYZ(xO, yO, p1.Z)).DistanceTo(p0) * FtToMm, 2);
-                CachedSection.L = Math.Abs((double)Math.Round(p0.DistanceTo(p1) * FtToMm / CachedSection.d, 2));
+                CachedSection.d = Math.Round((UnitUtils.ConvertFromInternalUnits((new XYZ(xO, yO, p1.Z)).DistanceTo(p0), DisplayUnitType.DUT_MILLIMETERS)), 2);
+                CachedSection.L = Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
             }
 
             // Case 4: p1\p0
@@ -384,13 +383,13 @@ namespace TFrame
                 XYZ CachedOrigin = new XYZ(xO, yO, zO);
                 CachedSection.Origin = CachedOrigin;
 
-                CachedSection.d = Math.Round((new XYZ(xO, yO, p1.Z)).DistanceTo(p0) * FtToMm, 2);
-                CachedSection.L = Math.Abs((double)Math.Round(p0.DistanceTo(p1) * FtToMm / CachedSection.d, 2));
+                CachedSection.d = Math.Round((UnitUtils.ConvertFromInternalUnits((new XYZ(xO, yO, p1.Z)).DistanceTo(p0), DisplayUnitType.DUT_MILLIMETERS)), 2);
+                CachedSection.L = Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
             }
         }
 
 
-        BoundingBoxXYZ bb;
+        static BoundingBoxXYZ bb;
         /// <summary>
         /// Use this method to retrieve the bounding box of the selected element
         /// </summary>
@@ -398,7 +397,7 @@ namespace TFrame
         /// <param name="doc">The opened doc</param>
         /// <param name="pSections">This method retrieves bb for each Section of this list</param>
         /// <returns></returns>
-        public void CreateBoundingBox(Element e, Document doc, List<Section> pSections)
+        public static void CreateBoundingBox(Element e, Document doc, List<Section> pSections)
         {
             BoundingBoxTransform(e, pSections);
 
@@ -412,7 +411,7 @@ namespace TFrame
             }
         }
 
-        void BoundingBoxTransform(Element e, List<Section> pSections)
+        static void BoundingBoxTransform(Element e, List<Section> pSections)
         {
             XYZ p0 = BeamTools.GetBeamEnds(e)[0];
             XYZ p1 = BeamTools.GetBeamEnds(e)[1];
@@ -436,7 +435,7 @@ namespace TFrame
         }
 
        
-        public XYZ GetBasisZ(XYZ p0, XYZ p1)
+        public static XYZ GetBasisZ(XYZ p0, XYZ p1)
         {
             double x = p1.X - p0.X;
             double y = p1.Y - p0.Y;
@@ -447,7 +446,7 @@ namespace TFrame
             return Z;
         }
 
-        public XYZ GetBasisX(XYZ BasisZ)
+        public static XYZ GetBasisX(XYZ BasisZ)
         {
             double x = -BasisZ.Y;
             double y = BasisZ.X;
@@ -458,7 +457,7 @@ namespace TFrame
         }
 
 
-        public void GetOrigin(XYZ p0, XYZ p1, List<Section> pSections)
+        public static void GetOrigin(XYZ p0, XYZ p1, List<Section> pSections)
         {
             List<XYZ> origins = new List<XYZ>();
 
@@ -476,17 +475,16 @@ namespace TFrame
                     }
                     else
                     {
-                        GeometryTools tGeo = new GeometryTools();
-                        x = tGeo.GetRelativePointBetween2Points(p0, p1, sec.d).X;
-                        y = tGeo.GetRelativePointBetween2Points(p0, p1, sec.d).Y;
-                        z = tGeo.GetRelativePointBetween2Points(p0, p1, sec.d).Z;
+                        x = GeometryTools.GetRelativePointBetween2Points(p0, p1, sec.d).X;
+                        y = GeometryTools.GetRelativePointBetween2Points(p0, p1, sec.d).Y;
+                        z = GeometryTools.GetRelativePointBetween2Points(p0, p1, sec.d).Z;
                     }
                     sec.Origin = new XYZ(x, y, z);
                 }
             }
         }
 
-        public void GetBBCoordinates(Element e, Section sec, BoundingBoxXYZ bb)
+        public static void GetBBCoordinates(Element e, Section sec, BoundingBoxXYZ bb)
         {
             double b = BeamTools.GetBeamDims(e)[0];
             double h = BeamTools.GetBeamDims(e)[1];

@@ -23,6 +23,14 @@ namespace TFrame
 
         public static string PathSettingBeamMark = @"D:\Thai\Code\Revit\TFrame\Data\Beam Marks.xml";
 
-        public static Document Doc { get; set; }
+        public static Document Doccument { get; set; }
+        public static ExternalCommandData ExternalCommandData { get; set; }
+        public static UIDocument UIDocument { get; set; }
+
+        // Link
+        public static string BreakLineDirectory
+        {
+            get { return @"C:\ProgramData\Autodesk\RVT 2019\Libraries\Canada\Detail Items\Div 01-General\M_Break Line.rfa"; }
+        }
     }
 }

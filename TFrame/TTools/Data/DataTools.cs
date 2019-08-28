@@ -359,14 +359,8 @@ namespace TFrame
             node.Attributes.Append(xmlAttribute);
         }
         #endregion
-    }
 
-    /// <summary>
-    /// Use this class to save data to revit element
-    /// </summary>
-    public class TStoreData
-    {
-        public void AddInfoToElement<T>(Element e, T info, string fieldName, UnitType unitType, DisplayUnitType displayUnitType)
+        public static void AddInfoToElement<T>(Element e, T info, string fieldName, UnitType unitType, DisplayUnitType displayUnitType)
         {
 
             // Delete existing schemas
@@ -411,7 +405,7 @@ namespace TFrame
             e.SetEntity(entity);
         }
 
-        public T GetInfoFromElement<T>(Element e, string fieldName, DisplayUnitType displayUnitType)
+        public static T GetInfoFromElement<T>(Element e, string fieldName, DisplayUnitType displayUnitType)
         {
             T v = default(T);
             var schemaGuids = e.GetEntitySchemaGuids();
@@ -427,5 +421,13 @@ namespace TFrame
             }
             return v;
         }
+    }
+
+    /// <summary>
+    /// Use this class to save data to revit element
+    /// </summary>
+    public class TStoreData
+    {
+        
     }
 }

@@ -28,7 +28,7 @@ namespace TFrame
 
         public static Element GetElementByMarkInView(string mark, View view)
         {
-            Document doc = GlobalParams.Doc;
+            Document doc = GlobalParams.Doccument;
             Element e = new FilteredElementCollector(doc, view.Id).Where(x => x.LookupParameter("Mark") != null && x.LookupParameter("Mark").AsString() == mark).FirstOrDefault();
             return e;
         }

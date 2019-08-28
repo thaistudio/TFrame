@@ -20,10 +20,9 @@ namespace TFrame
                 Initialize.InitializeDocument(doc);
 
                 TagActions tagAction = new TagActions(commandData);
-                SelectionTools selTools = new SelectionTools(commandData);
 
-                List<Element> selBeams = selTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
-                while (selBeams.Count == 0) selBeams = selTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
+                List<Element> selBeams = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
+                while (selBeams.Count == 0) selBeams = SelectionTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
 
                 Dictionary<Element, Dictionary<Section, Dictionary<List<List<Rebar>>, List<Rebar>>>> bigDic =
                     new Dictionary<Element, Dictionary<Section, Dictionary<List<List<Rebar>>, List<Rebar>>>>();

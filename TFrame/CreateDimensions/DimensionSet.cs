@@ -17,6 +17,7 @@ namespace TFrame
         }
 
         public TView TVIew { get; set; }
+        public double DimensionsSpacing { get; set; } = 0.5;
         public List<DimensionableReference> References { get; set; }
         public List<Dimension> Dimensions { get; set; }
         public UVPosition Position { get; set; }

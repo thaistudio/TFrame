@@ -29,7 +29,6 @@ namespace TFrame
                 Selection sel = uiDoc.Selection;
                 ICollection<ElementId> selIds = sel.GetElementIds();
 
-                BeamTools tAct = new BeamTools();
                 SectionTools secTool = new SectionTools(commandData);
 
                 foreach (ElementId selId in selIds)
@@ -51,14 +50,14 @@ namespace TFrame
                     }
                     else if (cat.Name == strFramingCat.Name)
                     {
-                        List<Rebar> rebars = tAct.CacheRebars(selElem, doc);
+                        List<Rebar> rebars = BeamTools.CacheRebars(selElem, doc);
                         foreach (Rebar rebar in rebars)
                         {
                             Autodesk.Revit.DB.Reference reference = new Autodesk.Revit.DB.Reference(rebar);
                             References.Add(reference);
                         }
 
-                        List<Section> sections = secTool.CacheSections(selElem, doc, SectionTools.SectionType.CrossSection);
+                        List<Section> sections = SectionTools.CacheSections(selElem, doc, SectionTools.SectionType.CrossSection);
                         foreach (Section section in sections)
                         {
                             View view = section.ViewSection;
@@ -75,9 +74,8 @@ namespace TFrame
 
                 XYZ pnt = new XYZ(2.98836717912826, -16.6007517695874, LeaderElbow.Z - 0.030891335);
 
-                FamilyTools fa = new FamilyTools();
-                fa.SearchFamilySymbolByBuiltInCategory(BuiltInCategory.OST_RebarTags);
-                ElementId desiredFamily = fa.SearchFamilySymbolByBuiltInCategory(BuiltInCategory.OST_RebarTags)[2].Id;
+                FamilyTools.SearchFamilySymbolByBuiltInCategory(BuiltInCategory.OST_RebarTags);
+                ElementId desiredFamily = FamilyTools.SearchFamilySymbolByBuiltInCategory(BuiltInCategory.OST_RebarTags)[2].Id;
 
                 using (Transaction t = new Transaction(doc, "Tag Rebars by Category"))
                 {

@@ -18,7 +18,7 @@ namespace TFrame
         /// <param name="p1"></param>
         /// <param name="p2"></param>
         /// <returns></returns>
-        public List<double> GetPlaneFrom3Points(XYZ p0, XYZ p1, XYZ p2)
+        public static List<double> GetPlaneFrom3Points(XYZ p0, XYZ p1, XYZ p2)
         {
             List<double> plane = new List<double>();
             XYZ sub1 = Subtract2Points(p0, p1);
@@ -34,7 +34,7 @@ namespace TFrame
             return plane;
         }
 
-        public XYZ Subtract2Points(XYZ p0, XYZ p1)
+        public static XYZ Subtract2Points(XYZ p0, XYZ p1)
         {
             double x = p1.X - p0.X;
             double y = p1.Y - p0.Y;
@@ -43,7 +43,7 @@ namespace TFrame
             return subtacted;
         }
 
-        public XYZ Multiply2Points(XYZ p0, XYZ p1)
+        public static XYZ Multiply2Points(XYZ p0, XYZ p1)
         {
             double x = p0.Y * p1.Z - p0.Z * p1.Y;
             double y = p0.Z * p1.X - p0.X * p1.Z;
@@ -52,7 +52,7 @@ namespace TFrame
             return multiplied;
         }
 
-        public double GetDistancePointToPlane(XYZ point, List<double> plane)
+        public static double GetDistancePointToPlane(XYZ point, List<double> plane)
         {
             double distance = Math.Abs(plane[0] * point.X + plane[1] * point.Y + plane[2] * point.Z + plane[3])
                 / (Math.Sqrt(plane[0] * plane[0] + plane[1] * plane[1] + plane[2] * plane[2]));
@@ -105,7 +105,7 @@ namespace TFrame
         /// <param name="distance">Distance between p0 and the looking point</param>
         /// <param name="unit"></param>
         /// <returns></returns>
-        public XYZ GetRelativePointBetween2Points(XYZ p0, XYZ p1, double distance)
+        public static XYZ GetRelativePointBetween2Points(XYZ p0, XYZ p1, double distance)
         {
             XYZ lineEquation = GetLineEquationFrom2Points(p0, p1);
             double D = Math.Sqrt((Math.Pow(p0.X - p1.X, 2)) + (Math.Pow(p0.Y - p1.Y, 2)));
@@ -123,7 +123,7 @@ namespace TFrame
         /// <param name="p0"></param>
         /// <param name="p1"></param>
         /// <returns></returns>
-        public XYZ GetLineEquationFrom2Points(XYZ p0, XYZ p1)
+        public static XYZ GetLineEquationFrom2Points(XYZ p0, XYZ p1)
         {
             double l = p1.X - p0.X;
             double m = p1.Y - p0.Y;

@@ -17,9 +17,8 @@ namespace TFrame
                 UIDocument uidoc = commandData.Application.ActiveUIDocument;
                 Document doc = uidoc.Document;
 
-                SelectionTools selTools = new SelectionTools(commandData);
-                List<Element> beams = selTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
-                List<Element> cols = selTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralColumns);
+                List<Element> beams = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
+                List<Element> cols = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralColumns);
                 var elems = beams.Concat(cols);
 
                 using (Transaction t = new Transaction(doc, "T Delete Sections"))

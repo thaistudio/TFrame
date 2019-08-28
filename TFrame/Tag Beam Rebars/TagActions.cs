@@ -44,17 +44,13 @@ namespace TFrame
             secTools = new SectionTools(commandData);
         }
 
-        BeamTools beamTools = new BeamTools();
-        TStoreData tStore = new TStoreData();
-        RebarTools rebarTools = new RebarTools();
-
         public void TagMultiRebars(Element selectedBeam, Dictionary<Section, Dictionary<List<List<Rebar>>, List<Rebar>>> big)
         {
                 foreach (KeyValuePair<Section, Dictionary<List<List<Rebar>>, List<Rebar>>> pair in big)
                 {
                     Dictionary<List<List<Rebar>>, List<Rebar>> standardStirrupDic = pair.Value;
-                    XYZ paraVector = beamTools.GetUnitParallelVector(BeamTools.GetBeamEnds(selectedBeam)[0], BeamTools.GetBeamEnds(selectedBeam)[1]);
-                    XYZ normalVector = beamTools.GetUnitNormalVector(BeamTools.GetBeamEnds(selectedBeam)[0], BeamTools.GetBeamEnds(selectedBeam)[1]);
+                    XYZ paraVector = BeamTools.GetUnitParallelVector(BeamTools.GetBeamEnds(selectedBeam)[0], BeamTools.GetBeamEnds(selectedBeam)[1]);
+                    XYZ normalVector = BeamTools.GetUnitNormalVector(BeamTools.GetBeamEnds(selectedBeam)[0], BeamTools.GetBeamEnds(selectedBeam)[1]);
 
                     Section section = pair.Key;
                     double h = BeamTools.GetBeamDims(selectedBeam)[0];
@@ -78,10 +74,10 @@ namespace TFrame
 
                                 if (rebar.Quantity == 1)
                                 {
-                                    XYZ rebarCoordinate = rebarTools.GetRebarCoorAtSection(rebar, section, _doc);
+                                    XYZ rebarCoordinate = RebarTools.GetRebarCoorAtSection(rebar, section, _doc);
                                     double beamMidElev = (selectedBeam.get_BoundingBox(section.ViewSection).Max.Z + selectedBeam.get_BoundingBox(section.ViewSection).Min.Z) / 2;
                                     double beamHeightNoRebarCover = 
-                                    BeamTools.GetBeamDims(selectedBeam)[1] - beamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_BOTTOM) - beamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_TOP);
+                                    BeamTools.GetBeamDims(selectedBeam)[1] - BeamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_BOTTOM) - BeamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_TOP);
                                     double coeff = 1;
                                     double sideCoeff;
 
@@ -114,9 +110,9 @@ namespace TFrame
                                 else if (rebar.Quantity > 1)
                                 {
                                     // Set tag options
-                                    double rebarElev = rebarTools.GetRebarElevation(rebar, section, _doc); //tStore.GetInfoFromElement<double>(rebar, "Elevation", DisplayUnitType.DUT_MILLIMETERS);
-                                    double distToTopFace = rebarTools.GetDistanceFromRebarToEdges(rebar, section, _doc, 2);
-                                    double distToBotFace = rebarTools.GetDistanceFromRebarToEdges(rebar, section, _doc, 3);
+                                    double rebarElev = RebarTools.GetRebarElevation(rebar, section, _doc); //tStore.GetInfoFromElement<double>(rebar, "Elevation", DisplayUnitType.DUT_MILLIMETERS);
+                                    double distToTopFace = RebarTools.GetDistanceFromRebarToEdges(rebar, section, _doc, 2);
+                                    double distToBotFace = RebarTools.GetDistanceFromRebarToEdges(rebar, section, _doc, 3);
                                     double desiredZ;  // Height of tag comparing to top of the beam
                                     double sideCoeff;
 
@@ -189,7 +185,7 @@ namespace TFrame
 
                         foreach (Rebar stirrup in stirrups)
                         {
-                            double beamWidthNoRebarCover = BeamTools.GetBeamDims(selectedBeam)[0] - 2 * beamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_OTHER);
+                            double beamWidthNoRebarCover = BeamTools.GetBeamDims(selectedBeam)[0] - 2 * BeamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_OTHER);
 
                             double stirrupD = stirrup.get_Parameter(BuiltInParameter.REBAR_INSTANCE_BAR_DIAMETER).AsDouble(); // Can write this as a method
                             double d = ((beamWidthNoRebarCover - stirrupD) / 2 + stirrupTagLength) * stirrupCoeff;
@@ -257,8 +253,8 @@ namespace TFrame
             Dictionary<Section, Dictionary<List<List<Rebar>>, List<Rebar>>> big = new Dictionary<Section, Dictionary<List<List<Rebar>>, List<Rebar>>>();
             Dictionary<List<List<Rebar>>, List<Rebar>> standardStirrup = new Dictionary<List<List<Rebar>>, List<Rebar>>();
 
-            List<Section> sections = secTools.CacheSections(selectedBeam, _doc, SectionTools.SectionType.CrossSection);
-            List<Rebar> rebars = beamTools.CacheRebars(selectedBeam, _doc);
+            List<Section> sections = SectionTools.CacheSections(selectedBeam, _doc, SectionTools.SectionType.CrossSection);
+            List<Rebar> rebars = BeamTools.CacheRebars(selectedBeam, _doc);
 
             foreach (Section section in sections)
             {
@@ -275,13 +271,10 @@ namespace TFrame
 
         public List<List<Rebar>> SortRebars(List<Rebar> rebars, Section section)
         {
-            RebarTools rebarTools = new RebarTools();
-            TStoreData tStore = new TStoreData();
             List<double> dists = new List<double>();
             Dictionary<Rebar, double> pairs = new Dictionary<Rebar, double>();
 
-
-            List<double> listOfUniqueElevations = rebarTools.GetRebarUniqueElevations(rebars, section, _doc).OrderByDescending(x => x).ToList();
+            List<double> listOfUniqueElevations = RebarTools.GetRebarUniqueElevations(rebars, section, _doc).OrderByDescending(x => x).ToList();
             int numberOfUniqueElevs = listOfUniqueElevations.Count;
 
             Dictionary<Rebar, double> rebarAndElev = new Dictionary<Rebar, double>();
@@ -294,13 +287,11 @@ namespace TFrame
 
         public List<List<Rebar>> SortRebarToRows(List<Rebar> rebars, Section section)
         {
-            RebarTools rebarTools = new RebarTools();
-
             Element beam = _doc.GetElement(rebars.First().GetHostId());
 
-            List<double> listOfUniqueValues = rebarTools.GetRebarUniqueElevations(rebars, section, _doc).OrderByDescending(x => x).ToList();
+            List<double> listOfUniqueValues = RebarTools.GetRebarUniqueElevations(rebars, section, _doc).OrderByDescending(x => x).ToList();
 
-            List<Rebar> rebars2 = rebars.OrderByDescending(x => rebarTools.GetRebarElevation(x, section, _doc)).ToList();
+            List<Rebar> rebars2 = rebars.OrderByDescending(x => RebarTools.GetRebarElevation(x, section, _doc)).ToList();
 
             Dictionary<Rebar, double> rebarsAndElevs = new Dictionary<Rebar, double>();
 
@@ -308,13 +299,11 @@ namespace TFrame
             List<List<Rebar>> rebarsByLevel = new List<List<Rebar>>();
             List<Rebar> row1 = new List<Rebar>();
 
-            BeamTools tAct = new BeamTools();
-            
-            double tolerance = tAct.GetRebarCover(beam, _doc, BuiltInParameter.CLEAR_COVER_TOP);
+            double tolerance = BeamTools.GetRebarCover(beam, _doc, BuiltInParameter.CLEAR_COVER_TOP);
 
             foreach (Rebar rebar in rebars2)
             {
-                double rebarElev = rebarTools.GetRebarElevation(rebar, section, _doc);
+                double rebarElev = RebarTools.GetRebarElevation(rebar, section, _doc);
                 rebarsAndElevs.Add(rebar, rebarElev);
             }
 
@@ -333,14 +322,14 @@ namespace TFrame
                             row1.Add(rebar);
                             rebarsByLevel.Add(row1);
                         }
-                        else if (Math.Abs(elev - rebarTools.GetRebarElevation(rebarsByDescendingElev.Last(), section, _doc)) > tolerance)
+                        else if (Math.Abs(elev - RebarTools.GetRebarElevation(rebarsByDescendingElev.Last(), section, _doc)) > tolerance)
                         {
                             rebarsByDescendingElev.Add(rebar);
                             List<Rebar> row2 = new List<Rebar>();
                             row2.Add(rebar);
                             rebarsByLevel.Add(row2);
                         }
-                        else if (Math.Abs(elev - rebarTools.GetRebarElevation(rebarsByDescendingElev.Last(), section, _doc)) < tolerance)
+                        else if (Math.Abs(elev - RebarTools.GetRebarElevation(rebarsByDescendingElev.Last(), section, _doc)) < tolerance)
                         {
                             rebarsByDescendingElev.Add(rebar);
                             rebarsByLevel.Last().Add(rebar);

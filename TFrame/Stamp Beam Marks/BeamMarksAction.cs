@@ -25,8 +25,6 @@ namespace TFrame
 
         Dictionary<Element, string> beamGrids;
 
-        TStoreData tData = new TStoreData();
-
         public BeamMarksAction(ExternalCommandData commandData)
         {
             uidoc = commandData.Application.ActiveUIDocument;
@@ -62,7 +60,7 @@ namespace TFrame
                         int i = setting.Suffix;
                         foreach (Element beam in group)
                         {
-                            if (UseGridName) circumfix = tData.GetInfoFromElement<string>(beam, "GridName", DisplayUnitType.DUT_UNDEFINED); //
+                            if (UseGridName) circumfix = DataTools.GetInfoFromElement<string>(beam, "GridName", DisplayUnitType.DUT_UNDEFINED); //
                             else circumfix = setting.Circumfix;
 
                             beam.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).
@@ -100,7 +98,7 @@ namespace TFrame
 
             if (ps.IsGridName)
             {
-                ps.Part = tData.GetInfoFromElement<string>(beam, "GridName", DisplayUnitType.DUT_UNDEFINED);
+                ps.Part = DataTools.GetInfoFromElement<string>(beam, "GridName", DisplayUnitType.DUT_UNDEFINED);
                 mark = ps.Part;
             }
 
@@ -325,7 +323,7 @@ namespace TFrame
                         group.Add(beam);
 
                         // Add grid name to beam data
-                        tData.AddInfoToElement(beam, grid.Name, "GridName", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
+                        DataTools.AddInfoToElement(beam, grid.Name, "GridName", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
                     }
                 }
 
@@ -334,7 +332,6 @@ namespace TFrame
             return groups;
         }
 
-       
         XYZ GetBeamMidPoint(Element e)
         {
             XYZ midPoint = new XYZ(); 

@@ -12,18 +12,18 @@ namespace TFrame
 {
     public class FamilyTools
     {
-        Document _doc;
+        static Document _doc;
 
         public FamilyTools()
         {
-            _doc = GlobalParams.Doc;
+            _doc = GlobalParams.Doccument;
         }
 
         /// <summary>
         /// Return family symbols of a built-in category
         /// </summary>
         /// <param name="builtInCategory"></param>
-        public List<FamilySymbol> SearchFamilySymbolByBuiltInCategory(BuiltInCategory builtInCategory)
+        public static List<FamilySymbol> SearchFamilySymbolByBuiltInCategory(BuiltInCategory builtInCategory)
         {
             List<FamilySymbol> familySymbols = new List<FamilySymbol>();
             FilteredElementCollector elements = new FilteredElementCollector(_doc).OfCategory(builtInCategory).WhereElementIsElementType();
@@ -39,7 +39,7 @@ namespace TFrame
             return familySymbols;
         }
 
-        public List<FamilySymbol> SearchFamilySymbolByFamily(Family family)
+        public static List<FamilySymbol> SearchFamilySymbolByFamily(Family family)
         {
             List<FamilySymbol> familySymbols = new List<FamilySymbol>();
 
@@ -60,7 +60,7 @@ namespace TFrame
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public object SearchFamilyByType<T> ()
+        public static object SearchFamilyByType<T> ()
         {
             List<Family> list = new List<Family>();
             List<ElementId> typeIds = new List<ElementId>(); 
@@ -85,7 +85,7 @@ namespace TFrame
         }
 
 
-        public List<Family> SearchFamilyByBuiltInCat (BuiltInCategory cat)
+        public static List<Family> SearchFamilyByBuiltInCat (BuiltInCategory cat)
         {
             List<Family> list = new List<Family>();
             FamilySymbol symbol = SearchFamilySymbolByBuiltInCategory(cat).FirstOrDefault();
@@ -104,7 +104,7 @@ namespace TFrame
             return list;
         }
 
-        public List<Element> SearchFamilySymbolAsElements<T>(bool IsElementType)
+        public static List<Element> SearchFamilySymbolAsElements<T>(bool IsElementType)
         {
             List<Element> ts = new List<Element>();
             List<FamilySymbol> familySymbols = new List<FamilySymbol>();
@@ -125,7 +125,7 @@ namespace TFrame
             return ts;
         }
 
-        public List<Element> SearchFamilySymbolOfFamilyName<T>(string familyName)
+        public static List<Element> SearchFamilySymbolOfFamilyName<T>(string familyName)
         {
             List<Element> ts = new List<Element>();
             List<FamilySymbol> familySymbols = new List<FamilySymbol>();
@@ -141,12 +141,12 @@ namespace TFrame
 
         public static bool FamilyExists(string familyName)
         {
-            IEnumerable<Element> families = new FilteredElementCollector(GlobalParams.Doc).OfClass(typeof(Family)).Where(x => x.Name == familyName);
+            IEnumerable<Element> families = new FilteredElementCollector(GlobalParams.Doccument).OfClass(typeof(Family)).Where(x => x.Name == familyName);
             if (families.Count() > 0) return true;
             return false;
         }
 
-        public FamilySymbol GetFamilySymbol(Element e)
+        public static FamilySymbol GetFamilySymbol(Element e)
         {
             if (e is FamilyInstance)
             {
@@ -182,7 +182,7 @@ namespace TFrame
         /// <param name="famName"></param>
         public static void LoadFamily(string path, string famName = null)
         {
-            if (!FamilyExists(famName)) GlobalParams.Doc.LoadFamily(path);
+            if (!FamilyExists(famName)) GlobalParams.Doccument.LoadFamily(path);
         }
     }
 }

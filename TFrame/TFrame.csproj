@@ -189,5 +189,11 @@
   <ItemGroup>
     <Folder Include="UI\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Thai lib\Save Load Windows Form UI\SaveLoadWinFormUI\SaveLoadWinFormUI\SaveLoadWinFormUI.csproj">
+      <Project>{cd33c4ab-7326-4da5-8d2d-5401d9687acb}</Project>
+      <Name>SaveLoadWinFormUI</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

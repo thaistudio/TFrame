@@ -36,17 +36,11 @@ namespace TFrame
         {
             try
             {
-                BeamTools tAct = new BeamTools();
-                SectionTools secTool = new SectionTools(commandData);
-                TStoreData tData = new TStoreData();
-
                 Document doc = commandData.Application.ActiveUIDocument.Document;
                 UIDocument uiDoc = commandData.Application.ActiveUIDocument;
 
-                SelectionTools selTools = new SelectionTools(commandData);
-
-                selBeams = selTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
-                while (selBeams.Count == 0) selBeams = selTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
+                selBeams = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
+                while (selBeams.Count == 0) selBeams = SelectionTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
                 
                 Initialize.InitializeDocument(doc);
 
@@ -76,7 +70,7 @@ namespace TFrame
                 {
                     UniqueIds.Add(elem.UniqueId);
                     hosts.Add(ElementTools.GetMark(elem));
-                    cachedSections1Beam = secTool.CacheSections(elem, doc, SectionTools.SectionType.CrossSection);
+                    cachedSections1Beam = SectionTools.CacheSections(elem, doc, SectionTools.SectionType.CrossSection);
                     cachedSectionsAllBeams.AddRange(cachedSections1Beam);
                 }
 
@@ -94,7 +88,7 @@ namespace TFrame
                     t.Start();
                     foreach (Element elem in selBeams)
                     {
-                        secTool.CreateBoundingBox(elem, doc, passedFromFormsSections);
+                        SectionTools.CreateBoundingBox(elem, doc, passedFromFormsSections);
                         if (FieldClass.IsCleared || FieldClass.IsDeleted || FieldClass.IsUpdated)
                         {
                             foreach (Section sec in delSections)
@@ -113,7 +107,7 @@ namespace TFrame
                             {
                                 ViewSection viewSection = ViewSection.CreateSection(doc, sec.ViewFamilyType.Id, sec.BoundingBox);
                                 viewSection.LookupParameter("T_Mark").Set(elem.LookupParameter("Mark").AsString());
-                                tData.AddInfoToElement<string>(viewSection, "CrossSection", "Direction", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
+                                DataTools.AddInfoToElement<string>(viewSection, "CrossSection", "Direction", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
                                 if (sec.ViewSectionName != null) viewSection.LookupParameter("T_SectionName").Set(sec.ViewSectionName);
                                 viewSection.ViewTemplateId = sec.Template.Id;
                                 viewSection.CropBoxVisible = false;

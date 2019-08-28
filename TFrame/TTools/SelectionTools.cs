@@ -12,19 +12,19 @@ namespace TFrame
 { 
     public class SelectionTools
     {
-        ExternalCommandData _commandData;
-        UIDocument _uiDoc;
-        Document _doc;
+        static ExternalCommandData _commandData;
+        static UIDocument _uiDoc;
+        static Document _doc;
         FamilyTools fTools;
 
-        public SelectionTools(ExternalCommandData commandData)
+        public SelectionTools()
         {
-            _commandData = commandData;
+            _commandData = GlobalParams.ExternalCommandData;
             _uiDoc = _commandData.Application.ActiveUIDocument;
             _doc = _uiDoc.Document;
         }
 
-        public List<Element> GetSelectedMembers(ExternalCommandData commandData)
+        public static List<Element> GetSelectedMembers(ExternalCommandData commandData)
         {
             List<Element> elems = new List<Element>();
             foreach (ElementId id in _uiDoc.Selection.GetElementIds())
@@ -40,14 +40,13 @@ namespace TFrame
         /// </summary>
         /// <param name="commandData"></param>
         /// <returns></returns>
-        public List<Element> GetElemsOfCatFromSelection(BuiltInCategory category)
+        public static List<Element> GetElemsOfCatFromSelection(BuiltInCategory category)
         {
-            fTools = new FamilyTools();
             List<Element> elems = new List<Element>();
             foreach (ElementId id in _uiDoc.Selection.GetElementIds())
             {
                 Element elem = _doc.GetElement(id);
-                FamilySymbol symbol = fTools.GetFamilySymbol(elem);
+                FamilySymbol symbol = FamilyTools.GetFamilySymbol(elem);
                 if (symbol != null)
                 {
                     string name1 = symbol.Family.FamilyCategory.Name;
@@ -58,13 +57,12 @@ namespace TFrame
             return elems;
         }
 
-        public List<Element> GetElemsOfCatFromList(List<Element> elems, BuiltInCategory category)
+        public static List<Element> GetElemsOfCatFromList(List<Element> elems, BuiltInCategory category)
         {
-            fTools = new FamilyTools();
             List<Element> list = new List<Element>();
             foreach (Element elem in elems)
             {
-                FamilySymbol symbol = fTools.GetFamilySymbol(elem);
+                FamilySymbol symbol = FamilyTools.GetFamilySymbol(elem);
                 if (symbol != null)
                 {
                     string name1 = symbol.Family.FamilyCategory.Name;
@@ -78,14 +76,14 @@ namespace TFrame
         /// <summary>
         /// Urge the users to select 
         /// </summary>
-        public List<Element> UrgeSelection(BuiltInCategory category)
+        public static List<Element> UrgeSelection(BuiltInCategory category)
         {
             List<Element> sel = _uiDoc.Selection.PickElementsByRectangle("Please select beams! You can select other elements too, the command will filter beams out.").ToList();
             List<Element> elems = GetElemsOfCatFromList(sel, category);
             return elems;
         }
 
-        public List<Element> UrgePickSelection(UIDocument uiDoc)
+        public static List<Element> UrgePickSelection(UIDocument uiDoc)
         {
             Document doc = uiDoc.Document;
             List<Element> elems = new List<Element>();

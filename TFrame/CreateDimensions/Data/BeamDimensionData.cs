@@ -38,5 +38,11 @@ namespace TFrame
             set { SetPropertyValue(ref _dimType, value); }
         }
 
+        private string _breakLineFamilyDirectory = GlobalParams.BreakLineDirectory;
+        public string BreakLineFamilyDirectory
+        {
+            get { return _breakLineFamilyDirectory; }
+            set { SetPropertyValue(ref _breakLineFamilyDirectory, value); }
+        }
     }
 }

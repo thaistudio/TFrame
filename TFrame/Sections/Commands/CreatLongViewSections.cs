@@ -36,17 +36,13 @@ namespace TFrame
 
                 Initialize.InitializeDocument(doc);
 
-                SectionActions sAct = new SectionActions(commandData);
-                SelectionTools selTools = new SelectionTools(commandData);
-                SectionTools secTools = new SectionTools(commandData);
-                TStoreData tData = new TStoreData();
 
-                beams = selTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
-                while (beams.Count == 0) beams = selTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
+                beams = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
+                while (beams.Count == 0) beams = SelectionTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
 
                 foreach (Element beam in beams)
                 {
-                    cachedSections1Beam = secTools.CacheSections(beam, doc, SectionTools.SectionType.LongSection);
+                    cachedSections1Beam = SectionTools.CacheSections(beam, doc, SectionTools.SectionType.LongSection);
                     cachedSectionsAllBeams.AddRange(cachedSections1Beam);
                     hosts.Add(ElementTools.GetMark(beam));
                 }
@@ -98,17 +94,17 @@ namespace TFrame
 
                             foreach (Section sec in tobeCreatedSections)
                             {
-                                sAct.DefineSection(beam, sec);
+                                SectionActions.DefineSection(beam, sec);
                                 ViewSection viewSection = ViewSection.CreateSection(doc, sec.ViewFamilyType.Id, sec.BoundingBox);
                                 viewSection.LookupParameter("T_Mark").Set(beam.LookupParameter("Mark").AsString());
 
                                 sec.Host = viewSection.LookupParameter("T_Mark").AsString();
 
-                                tData.AddInfoToElement<string>(viewSection, "LongSection", "Direction", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
-                                tData.AddInfoToElement<string>(viewSection, sec.Offset.ToString(), "Offset", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
-                                tData.AddInfoToElement<string>(viewSection, sec.ViewFamilyType.Name, "ViewFamilyType", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
-                                tData.AddInfoToElement<string>(viewSection, sec.Template.Name, "Template", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
-                                tData.AddInfoToElement<string>(viewSection, sec.Host, "Host", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
+                                DataTools.AddInfoToElement<string>(viewSection, "LongSection", "Direction", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
+                                DataTools.AddInfoToElement<string>(viewSection, sec.Offset.ToString(), "Offset", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
+                                DataTools.AddInfoToElement<string>(viewSection, sec.ViewFamilyType.Name, "ViewFamilyType", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
+                                DataTools.AddInfoToElement<string>(viewSection, sec.Template.Name, "Template", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
+                                DataTools.AddInfoToElement<string>(viewSection, sec.Host, "Host", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
 
                                 if (sec.ViewSectionName != null) viewSection.LookupParameter("T_SectionName").Set(sec.ViewSectionName);
                                 viewSection.ViewTemplateId = sec.Template.Id;

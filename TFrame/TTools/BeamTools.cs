@@ -22,7 +22,7 @@ namespace TFrame
         /// <param name="host"></param>
         /// <param name="doc"></param>
         /// <returns></returns>
-        public List<Rebar> CacheRebars(Element host, Document doc)
+        public static List<Rebar> CacheRebars(Element host, Document doc)
         {
             List<Rebar> cachedRebars = new List<Rebar>();
             IEnumerable<Element> rebars = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rebar).WhereElementIsNotElementType().Where(x => x.LookupParameter("Host Mark").AsString() == ElementTools.GetMark(host));
@@ -79,7 +79,7 @@ namespace TFrame
             else return null;
         }
 
-        public double GetRebarCover(Element e, Document doc, BuiltInParameter builtInParameter)
+        public static double GetRebarCover(Element e, Document doc, BuiltInParameter builtInParameter)
         {
             ElementId coverId = e.get_Parameter(builtInParameter).AsElementId();
             Element coverElem = doc.GetElement(coverId);
@@ -94,7 +94,7 @@ namespace TFrame
             return length;
         }
 
-        public List<XYZ> GetBeamMidLine(Element e)
+        public static List<XYZ> GetBeamMidLine(Element e)
         {
             double coeff = 1;
             List<XYZ> points = new List<XYZ>();
@@ -117,7 +117,7 @@ namespace TFrame
             return points;
         }
 
-        public XYZ GetUnitParallelVector(XYZ p0, XYZ p1)
+        public static XYZ GetUnitParallelVector(XYZ p0, XYZ p1)
         {
             double x = p1.X - p0.X;
             double y = p1.Y - p0.Y;
@@ -127,7 +127,7 @@ namespace TFrame
             return paralVector;
         }
 
-        public XYZ GetUnitNormalVector(XYZ p0, XYZ p1)
+        public static XYZ GetUnitNormalVector(XYZ p0, XYZ p1)
         {
             double x = p0.Y - p1.Y;
             double y = p1.X - p0.X;
@@ -254,7 +254,7 @@ namespace TFrame
             return boundingPoints;
         }
 
-        public List<List<double>> GetBeamPlane(Element e, Document doc)
+        public static List<List<double>> GetBeamPlane(Element e, Document doc)
         {
             List<List<double>> planes = new List<List<double>>();
 
@@ -268,13 +268,12 @@ namespace TFrame
             XYZ bot3 = points[6];
             XYZ bot4 = points[7];
 
-            GeometryTools tGeo = new GeometryTools();
-            planes.Add(tGeo.GetPlaneFrom3Points(top1, top2, bot1)); //left
-            planes.Add(tGeo.GetPlaneFrom3Points(top3, top4, bot3)); //right
-            planes.Add(tGeo.GetPlaneFrom3Points(top3, top2, top1)); //top
-            planes.Add(tGeo.GetPlaneFrom3Points(bot3, bot2, bot1)); //bot
-            planes.Add(tGeo.GetPlaneFrom3Points(top3, top2, bot2)); //front
-            planes.Add(tGeo.GetPlaneFrom3Points(top1, top4, bot1)); //back
+            planes.Add(GeometryTools.GetPlaneFrom3Points(top1, top2, bot1)); //left
+            planes.Add(GeometryTools.GetPlaneFrom3Points(top3, top4, bot3)); //right
+            planes.Add(GeometryTools.GetPlaneFrom3Points(top3, top2, top1)); //top
+            planes.Add(GeometryTools.GetPlaneFrom3Points(bot3, bot2, bot1)); //bot
+            planes.Add(GeometryTools.GetPlaneFrom3Points(top3, top2, bot2)); //front
+            planes.Add(GeometryTools.GetPlaneFrom3Points(top1, top4, bot1)); //back
 
             return planes;
         }
@@ -682,7 +681,5 @@ namespace TFrame
     {
         P0, P1, P2, P3, P4, P5, P6, P7, P8
     }
-
-    
 }
 

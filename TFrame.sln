@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TFrame", "TFrame\TFrame.csproj", "{E4B7A423-A41D-4894-8C26-D99FE7EA018E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaveLoadWinFormUI", "..\..\..\..\Thai lib\Save Load Windows Form UI\SaveLoadWinFormUI\SaveLoadWinFormUI\SaveLoadWinFormUI.csproj", "{CD33C4AB-7326-4DA5-8D2D-5401D9687ACB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{E4B7A423-A41D-4894-8C26-D99FE7EA018E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4B7A423-A41D-4894-8C26-D99FE7EA018E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4B7A423-A41D-4894-8C26-D99FE7EA018E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD33C4AB-7326-4DA5-8D2D-5401D9687ACB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD33C4AB-7326-4DA5-8D2D-5401D9687ACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD33C4AB-7326-4DA5-8D2D-5401D9687ACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD33C4AB-7326-4DA5-8D2D-5401D9687ACB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
