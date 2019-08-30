@@ -20,7 +20,7 @@ namespace TFrame
             set
             {
                 _L = value;
-                Location = "L/" + Convert.ToString(_L);
+                Location = _L.ToString();
             }
         }
         public string ViewSectionName  // This is the Name property of ViewSection, but it can be set. ViewSection.Name can only get

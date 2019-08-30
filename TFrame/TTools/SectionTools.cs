@@ -202,7 +202,7 @@ namespace TFrame
                 CachedSection.Origin = CachedOrigin;
 
                 CachedSection.d = Math.Round((UnitUtils.ConvertFromInternalUnits((new XYZ(xO, yO, p1.Z)).DistanceTo(p0), DisplayUnitType.DUT_MILLIMETERS)), 2);
-                CachedSection.L = Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
+                CachedSection.L = 1 / Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
             }
 
             // Case 2: p0/p1
@@ -263,7 +263,7 @@ namespace TFrame
                 CachedSection.Origin = CachedOrigin;
 
                 CachedSection.d = Math.Round((UnitUtils.ConvertFromInternalUnits((new XYZ(xO, yO, p1.Z)).DistanceTo(p0), DisplayUnitType.DUT_MILLIMETERS)), 2);
-                CachedSection.L = Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
+                CachedSection.L = 1 / Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
             }
 
             // Case 3: p0\p1
@@ -323,7 +323,7 @@ namespace TFrame
                 CachedSection.Origin = CachedOrigin;
 
                 CachedSection.d = Math.Round((UnitUtils.ConvertFromInternalUnits((new XYZ(xO, yO, p1.Z)).DistanceTo(p0), DisplayUnitType.DUT_MILLIMETERS)), 2);
-                CachedSection.L = Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
+                CachedSection.L = 1 / Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
             }
 
             // Case 4: p1\p0
@@ -384,7 +384,7 @@ namespace TFrame
                 CachedSection.Origin = CachedOrigin;
 
                 CachedSection.d = Math.Round((UnitUtils.ConvertFromInternalUnits((new XYZ(xO, yO, p1.Z)).DistanceTo(p0), DisplayUnitType.DUT_MILLIMETERS)), 2);
-                CachedSection.L = Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
+                CachedSection.L = 1 / Math.Abs(Math.Round(UnitUtils.ConvertFromInternalUnits(p0.DistanceTo(p1), DisplayUnitType.DUT_MILLIMETERS) / CachedSection.d, 2));
             }
         }
 
@@ -471,8 +471,8 @@ namespace TFrame
                 {
                     if (sec.IsRelative)
                     {
-                        x = p0.X + (p1.X - p0.X) / sec.L;
-                        y = p0.Y + (p1.Y - p0.Y) / sec.L;
+                        x = p0.X + (p1.X - p0.X) * sec.L;
+                        y = p0.Y + (p1.Y - p0.Y) * sec.L;
                         z = (p0.Z + p1.Z) / 2;
                     }
                     else

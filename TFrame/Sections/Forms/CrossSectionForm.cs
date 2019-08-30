@@ -48,8 +48,8 @@ namespace TFrame
             FieldClass.IsCleared = false;
             FieldClass.IsDeleted = false;
 
-            numericUpDown1.BackColor = System.Drawing.SystemColors.Menu;
-            numericUpDown2.BackColor = System.Drawing.SystemColors.Menu;
+            textBoxRelativeDistance.BackColor = System.Drawing.SystemColors.Menu;
+            textBoxAbsDistance.BackColor = System.Drawing.SystemColors.Menu;
 
             // Make textBox1 and textBox2 unable when "Manual Naming" is not checked
             textBox1.Enabled = false;
@@ -83,8 +83,8 @@ namespace TFrame
             for (int i = 0; i < CachedSections2.Count; i++)
             {
                 dataGridView1.Rows.Add();
-                dataGridView1.Rows[i].Cells[0].Value = CachedSections2[i].Location;
-                dataGridView1.Rows[i].Cells[1].Value = CachedSections2[i].d;
+                dataGridView1.Rows[i].Cells[0].Value = Math.Round(CachedSections2[i].L, 3);
+                dataGridView1.Rows[i].Cells[1].Value = Math.Round(CachedSections2[i].d, 3);
                 dataGridView1.Rows[i].Cells[2].Value = CachedSections2[i].Template != null ? CachedSections2[i].Template.Name : "";
                 dataGridView1.Rows[i].Cells[3].Value = CachedSections2[i].ViewFamilyType.Name;
                 dataGridView1.Rows[i].Cells[4].Value = CachedSections2[i].ViewSectionName;
@@ -106,8 +106,8 @@ namespace TFrame
                     checkBox1.Checked = true;
                 }
 
-                numericUpDown1.Value = (decimal)tobePassedSections[0].L;
-                numericUpDown2.Value = (decimal)tobePassedSections[0].d;
+                textBoxRelativeDistance.Text = Math.Round(tobePassedSections[0].L, 3).ToString();
+                textBoxAbsDistance.Text = Math.Round(tobePassedSections[0].d, 3).ToString();
             }
 
             
@@ -137,13 +137,13 @@ namespace TFrame
 
             if (radioButton3.Checked)
             {
-                _section.L = (double)numericUpDown1.Value;
+                _section.L = Convert.ToDouble(textBoxRelativeDistance.Text);
                 _section.IsRelative = true;
             }
 
             if (radioButton4.Checked)
             {
-                _section.d = (double)numericUpDown2.Value / ftToMm;
+                _section.d = Convert.ToDouble(textBoxAbsDistance.Text) / ftToMm;
             }
 
             string vsn = "";
@@ -205,17 +205,17 @@ namespace TFrame
 
             if (radioButton3.Checked)
             {
-                _section.L = (double)numericUpDown1.Value;
+                _section.L = Convert.ToDouble(textBoxRelativeDistance.Text); 
                 _section.IsRelative = true;
             }
             else if (radioButton4.Checked)
             {
-                _section.d = (double)numericUpDown2.Value / ftToMm;
+                _section.d = Convert.ToDouble(textBoxAbsDistance.Text) / ftToMm;
             }
             else
             {
-                _section.L = (double)numericUpDown1.Value;
-                _section.d = (double)numericUpDown2.Value / ftToMm;
+                _section.L = Convert.ToDouble(textBoxRelativeDistance.Text);
+                _section.d = Convert.ToDouble(textBoxAbsDistance.Text) / ftToMm;
                 _section.IsRelative = true;
             }
 
@@ -360,22 +360,22 @@ namespace TFrame
         {
             FieldClass.IsRelativeDistanceClicked = true;
 
-            numericUpDown2.ReadOnly = true;
-            numericUpDown2.BackColor = System.Drawing.Color.Empty;
+            textBoxAbsDistance.ReadOnly = true;
+            textBoxAbsDistance.BackColor = System.Drawing.Color.Empty;
 
-            numericUpDown1.ReadOnly = false;
-            numericUpDown1.BackColor = System.Drawing.Color.Empty;
+            textBoxRelativeDistance.ReadOnly = false;
+            textBoxRelativeDistance.BackColor = System.Drawing.Color.Empty;
         }
 
         private void radioButton4_CheckedChanged(object sender, EventArgs e)
         {
             FieldClass.IsRelativeDistanceClicked = false;
 
-            numericUpDown1.ReadOnly = true;
-            numericUpDown1.BackColor = System.Drawing.SystemColors.Menu;
+            textBoxRelativeDistance.ReadOnly = true;
+            textBoxRelativeDistance.BackColor = System.Drawing.SystemColors.Menu;
 
-            numericUpDown2.ReadOnly = false;
-            numericUpDown2.BackColor = System.Drawing.Color.Empty;
+            textBoxAbsDistance.ReadOnly = false;
+            textBoxAbsDistance.BackColor = System.Drawing.Color.Empty;
         }
 
         private void textBox2_TextChanged(object sender, EventArgs e)
@@ -431,13 +431,37 @@ namespace TFrame
                     checkBox1.Checked = true;
                 }
 
-                numericUpDown1.Value = (decimal)tobePassedSections[row].L;
-                numericUpDown2.Value = (decimal)tobePassedSections[row].d;
+                textBoxRelativeDistance.Text = tobePassedSections[row].L.ToString();
+                textBoxAbsDistance.Text = tobePassedSections[row].d.ToString();
             }
             catch 
             {
                 return;
             }
+        }
+
+        private void NumberTextBox(object sender)
+        {
+            System.Windows.Forms.TextBox tb = (System.Windows.Forms.TextBox)sender;
+            try
+            {
+                double d = Convert.ToDouble(tb.Text);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Please enter a valid number!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                tb.Text = "1";
+            }
+        }
+
+        private void TextBoxRelativeDistance_Leave(object sender, EventArgs e)
+        {
+            NumberTextBox(sender);
+        }
+
+        private void TextBoxAbsDistance_Leave(object sender, EventArgs e)
+        {
+            NumberTextBox(sender);
         }
     }
 }

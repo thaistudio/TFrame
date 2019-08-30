@@ -31,7 +31,6 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
@@ -50,7 +49,6 @@
             this.label4 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.radioButton4 = new System.Windows.Forms.RadioButton();
-            this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
             this.radioButton3 = new System.Windows.Forms.RadioButton();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
@@ -58,10 +56,10 @@
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            this.textBoxRelativeDistance = new System.Windows.Forms.TextBox();
+            this.textBoxAbsDistance = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -96,14 +94,6 @@
             this.label1.TabIndex = 2;
             this.label1.Text = "Choose View Template";
             this.label1.Click += new System.EventHandler(this.label1_Click);
-            // 
-            // numericUpDown1
-            // 
-            this.numericUpDown1.Location = new System.Drawing.Point(148, 19);
-            this.numericUpDown1.Margin = new System.Windows.Forms.Padding(2);
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(76, 20);
-            this.numericUpDown1.TabIndex = 3;
             // 
             // button2
             // 
@@ -266,10 +256,10 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.textBoxAbsDistance);
+            this.groupBox2.Controls.Add(this.textBoxRelativeDistance);
             this.groupBox2.Controls.Add(this.radioButton4);
-            this.groupBox2.Controls.Add(this.numericUpDown2);
             this.groupBox2.Controls.Add(this.radioButton3);
-            this.groupBox2.Controls.Add(this.numericUpDown1);
             this.groupBox2.Location = new System.Drawing.Point(236, 43);
             this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox2.Name = "groupBox2";
@@ -291,20 +281,6 @@
             this.radioButton4.Text = "Absolute Distance";
             this.radioButton4.UseVisualStyleBackColor = true;
             this.radioButton4.CheckedChanged += new System.EventHandler(this.radioButton4_CheckedChanged);
-            // 
-            // numericUpDown2
-            // 
-            this.numericUpDown2.DecimalPlaces = 2;
-            this.numericUpDown2.Location = new System.Drawing.Point(148, 44);
-            this.numericUpDown2.Margin = new System.Windows.Forms.Padding(2);
-            this.numericUpDown2.Maximum = new decimal(new int[] {
-            1000000,
-            0,
-            0,
-            0});
-            this.numericUpDown2.Name = "numericUpDown2";
-            this.numericUpDown2.Size = new System.Drawing.Size(76, 20);
-            this.numericUpDown2.TabIndex = 29;
             // 
             // radioButton3
             // 
@@ -377,6 +353,22 @@
             this.textBox1.Size = new System.Drawing.Size(52, 20);
             this.textBox1.TabIndex = 29;
             // 
+            // textBoxRelativeDistance
+            // 
+            this.textBoxRelativeDistance.Location = new System.Drawing.Point(148, 18);
+            this.textBoxRelativeDistance.Name = "textBoxRelativeDistance";
+            this.textBoxRelativeDistance.Size = new System.Drawing.Size(76, 20);
+            this.textBoxRelativeDistance.TabIndex = 31;
+            this.textBoxRelativeDistance.Leave += new System.EventHandler(this.TextBoxRelativeDistance_Leave);
+            // 
+            // textBoxAbsDistance
+            // 
+            this.textBoxAbsDistance.Location = new System.Drawing.Point(148, 44);
+            this.textBoxAbsDistance.Name = "textBoxAbsDistance";
+            this.textBoxAbsDistance.Size = new System.Drawing.Size(76, 20);
+            this.textBoxAbsDistance.TabIndex = 32;
+            this.textBoxAbsDistance.Leave += new System.EventHandler(this.TextBoxAbsDistance_Leave);
+            // 
             // SectionForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -401,11 +393,9 @@
             this.Name = "SectionForm";
             this.Text = "Cross-Section Settings";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SectionForm_FormClosing);
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
@@ -418,7 +408,6 @@
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
@@ -431,7 +420,6 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.RadioButton radioButton4;
-        private System.Windows.Forms.NumericUpDown numericUpDown2;
         private System.Windows.Forms.RadioButton radioButton3;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Label label3;
@@ -445,5 +433,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column6;
+        private System.Windows.Forms.TextBox textBoxRelativeDistance;
+        private System.Windows.Forms.TextBox textBoxAbsDistance;
     }
 }

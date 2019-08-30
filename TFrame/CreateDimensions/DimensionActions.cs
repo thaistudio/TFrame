@@ -237,16 +237,31 @@ namespace TFrame
             UVPosition uvPos = dimensionSet.Position;
 
             // Calculate the distance from the edge of the host beam to the bounding box boudary
-            // The first point is 0.5ft + dimensionSpacing from vierwer bb's max/min points
             if (uvPos == UVPosition.Left)
             {
-                origin = GeometryTools.GetPointParallelToLineAtDistance
-                    (section.ViewSection.RightDirection, XYZ.Zero, section.ViewerBoundingBox.Max, .5 + dimensionSpacing); 
+                if (dimensionSet.HasOverallDimension) // When there are more than 1 dimension, the first point is 0.5ft + dimensionSpacing from vierwer bb's max/min points
+                {
+                    origin = GeometryTools.GetPointParallelToLineAtDistance
+                    (section.ViewSection.RightDirection, XYZ.Zero, section.ViewerBoundingBox.Max, 0.5 + dimensionSpacing);
+                }
+                else // When there is only 1 dim a.k.a. no side beam, dimension is 0.5ft away from host beam's side face
+                {
+                    origin = GeometryTools.GetPointParallelToLineAtDistance
+                    (section.ViewSection.RightDirection, XYZ.Zero, section.ViewerBoundingBox.Max, 0.5 - section.XMaxExtra);
+                }
             }
             else if (uvPos == UVPosition.Right)
             {
-                origin = GeometryTools.GetPointParallelToLineAtDistance
-                    (XYZ.Zero, section.ViewSection.RightDirection, section.ViewerBoundingBox.Min, .5 + dimensionSpacing); 
+                if (dimensionSet.HasOverallDimension) // When there are more than 1 dimension, the first point is 0.5ft + dimensionSpacing from vierwer bb's max/min points
+                {
+                    origin = GeometryTools.GetPointParallelToLineAtDistance
+                      (XYZ.Zero, section.ViewSection.RightDirection, section.ViewerBoundingBox.Min, 0.5 + dimensionSpacing);
+                }
+                else // When there is only 1 dim a.k.a. no side beam, dimension is 0.5ft away from host beam's side face
+                {
+                    origin = GeometryTools.GetPointParallelToLineAtDistance
+                      (XYZ.Zero, section.ViewSection.RightDirection, section.ViewerBoundingBox.Min, 0.5 - section.XMinExtra);
+                }
             }
 
             return origin;
