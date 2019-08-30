@@ -39,7 +39,7 @@ namespace TFrame
             References.Add(tRef);
         }
 
-        public void GetReferencesOfBeam(Element beam)
+        public void CollectReferencesOfBeam(Element beam)
         {
             if (Position == UVPosition.Down) // Horizontal dimensions
             {

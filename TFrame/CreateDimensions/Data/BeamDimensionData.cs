@@ -44,5 +44,12 @@ namespace TFrame
             get { return _breakLineFamilyDirectory; }
             set { SetPropertyValue(ref _breakLineFamilyDirectory, value); }
         }
+
+        private bool _OK;
+        public bool OK
+        {
+            get { return _OK; }
+            set { SetPropertyValue(ref _OK, value); }
+        }
     }
 }

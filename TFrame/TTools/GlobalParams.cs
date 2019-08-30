@@ -21,6 +21,14 @@ namespace TFrame
         public static List<string> Errors = new List<string>();
         public static string ErrorPath = @"D:\Thai\Code\Revit\TFrame\Data\Errors.log";
 
+        public static void AddException(Exception ex)
+        {
+            string message = ex.Message;
+            string stackTrace = ex.StackTrace;
+            Errors.Add(message);
+            Errors.Add(stackTrace);
+        }
+
         public static string PathSettingBeamMark = @"D:\Thai\Code\Revit\TFrame\Data\Beam Marks.xml";
 
         public static Document Doccument { get; set; }

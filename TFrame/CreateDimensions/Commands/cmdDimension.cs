@@ -20,7 +20,6 @@ namespace TFrame
            
         protected override Result MainMethod()
         {
-            var v = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Viewers).Where(x => x.Name == "Section 50");
             // Urge users to select beams
             selBeams = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
             while (selBeams.Count == 0) selBeams = SelectionTools.UrgeSelection(BuiltInCategory.OST_StructuralFraming);
@@ -29,6 +28,8 @@ namespace TFrame
             BeamDimUC form = new BeamDimUC(doc);
             form.ShowDialog();
 
+            if (!BeamDimensionData.Singleton.OK) return Result.Cancelled; // Cancel button clicked
+           
             // Main actions
             foreach (Element beam in selBeams)
             {

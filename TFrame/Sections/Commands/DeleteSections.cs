@@ -8,44 +8,26 @@ using Autodesk.Revit.UI;
 namespace TFrame
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
-    class DeleteSections : IExternalCommand
+    class DeleteSections : TCommand
     {
-        public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
+        public DeleteSections() : base("Delete Sections", true) { }
+
+        protected override Result MainMethod()
         {
-            try
+            List<Element> beams = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
+            List<Element> cols = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralColumns);
+            var elems = beams.Concat(cols);
+
+            foreach (Element elem in elems)
             {
-                UIDocument uidoc = commandData.Application.ActiveUIDocument;
-                Document doc = uidoc.Document;
-
-                List<Element> beams = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralFraming);
-                List<Element> cols = SelectionTools.GetElemsOfCatFromSelection(BuiltInCategory.OST_StructuralColumns);
-                var elems = beams.Concat(cols);
-
-                using (Transaction t = new Transaction(doc, "T Delete Sections"))
+                List<ViewSection> sections = SectionTools.CacheViewSections(elem, doc);
+                foreach (ViewSection vs in sections)
                 {
-                    t.Start();
-                    foreach (Element elem in elems)
-                    {
-                        List<ViewSection> sections = SectionTools.CacheViewSections(elem, doc);
-                        foreach (ViewSection vs in sections)
-                        {
-                            doc.Delete(vs.Id);
-                        }
-                    }
-                    t.Commit();
+                    doc.Delete(vs.Id);
                 }
-
-                DataTools.WriteErrors(GlobalParams.ErrorPath, GlobalParams.Errors);
-
-                return Result.Succeeded; 
             }
-            catch (Exception ex)
-            {
-                GlobalParams.Errors.Add(ex.Message + ex.StackTrace);
-                message = ex.Message;
-                DataTools.WriteErrors(GlobalParams.ErrorPath, GlobalParams.Errors);
-                return Result.Failed;
-            }
+
+            return Result.Succeeded;
         }
     }
 }

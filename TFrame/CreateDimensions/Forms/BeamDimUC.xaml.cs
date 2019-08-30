@@ -35,11 +35,13 @@ namespace TFrame
         private void OKBtn_Click(object sender, RoutedEventArgs e)
         {
             WPF.SaveWinFormUI(this, path);
+            BeamDimensionData.Singleton.OK = true;
             Close();
         }
 
         private void CancelBtn_Click(object sender, RoutedEventArgs e)
         {
+            BeamDimensionData.Singleton.OK = false;
             Close();
         }
 

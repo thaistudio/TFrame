@@ -24,13 +24,13 @@ namespace TFrame
 
             Document doc = commandData.Application.ActiveUIDocument.Document;
             
-            comboBox5.DataSource = FamilyTools.SearchFamilyByBuiltInCat(BuiltInCategory.OST_RebarTags);
+            comboBox5.DataSource = FamilyTools.SearchFamilyByBuiltInCategory(BuiltInCategory.OST_RebarTags);
             comboBox5.DisplayMember = "Name";
 
-            comboBox6.DataSource = FamilyTools.SearchFamilyByBuiltInCat(BuiltInCategory.OST_RebarTags);
+            comboBox6.DataSource = FamilyTools.SearchFamilyByBuiltInCategory(BuiltInCategory.OST_RebarTags);
             comboBox6.DisplayMember = "Name";
 
-            comboBox8.DataSource = FamilyTools.SearchFamilyByBuiltInCat(BuiltInCategory.OST_RebarTags);
+            comboBox8.DataSource = FamilyTools.SearchFamilyByBuiltInCategory(BuiltInCategory.OST_RebarTags);
             comboBox8.DisplayMember = "Name";
 
             List<Element> l = FamilyTools.SearchFamilySymbolAsElements<MultiReferenceAnnotationType>(true);

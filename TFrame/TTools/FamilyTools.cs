@@ -60,7 +60,7 @@ namespace TFrame
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static object SearchFamilyByType<T> ()
+        public static object SearchFamilyByType<T>()
         {
             List<Family> list = new List<Family>();
             List<ElementId> typeIds = new List<ElementId>(); 
@@ -84,8 +84,24 @@ namespace TFrame
             return list;
         }
 
+        /// <summary>
+        /// Return a list of objects of type T
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="doc"></param>
+        /// <param name="isElementType"></param>
+        /// <param name="view"></param>
+        /// <returns></returns>
+        public static List<T> SearchElementsByType<T>(Document doc, bool isElementType, View view = null)
+        {
+            FilteredElementCollector filter; 
+            if (isElementType) filter = new FilteredElementCollector(doc, view.Id).OfClass(typeof(T)).WhereElementIsElementType();
+            else filter = new FilteredElementCollector(doc, view.Id).OfClass(typeof(T)).WhereElementIsNotElementType();
+           
+            return filter.Cast<T>().ToList();
+        }
 
-        public static List<Family> SearchFamilyByBuiltInCat (BuiltInCategory cat)
+        public static List<Family> SearchFamilyByBuiltInCategory(BuiltInCategory cat)
         {
             List<Family> list = new List<Family>();
             FamilySymbol symbol = SearchFamilySymbolByBuiltInCategory(cat).FirstOrDefault();

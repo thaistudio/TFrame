@@ -102,6 +102,27 @@ namespace TFrame
         {
             DimensionSets.Add(dimensionSet);
         }
+
+        public XYZ GetSectionPoint(Point point)
+        {
+            XYZ p0 = GeometryTools.GetPointParallelToLineAtDistance(XYZ.Zero, XYZ.BasisZ.Negate(), ViewerBoundingBox.Max, ViewerBoundingBox.Max.Z - ViewerBoundingBox.Min.Z);
+            XYZ p1 = ViewerBoundingBox.Max;
+            XYZ p2 = GeometryTools.GetPointParallelToLineAtDistance(XYZ.Zero, XYZ.BasisZ, ViewerBoundingBox.Min, ViewerBoundingBox.Max.Z - ViewerBoundingBox.Min.Z);
+            XYZ p3 = ViewerBoundingBox.Min;
+            XYZ p4 = GeometryTools.GetPointNormalToLineAtDistance(p0, p3, ZMaxExtra);
+            XYZ p5 = GeometryTools.GetPointNormalToLineAtDistance(p1, p2, ZMaxExtra);
+            XYZ p6 = GeometryTools.GetPointNormalToLineAtDistance(p2, p1, -ZMaxExtra);
+            XYZ p7 = GeometryTools.GetPointNormalToLineAtDistance(p3, p0, -ZMaxExtra);
+            if (point == Point.P0) return p0;
+            if (point == Point.P1) return p1;
+            if (point == Point.P2) return p2;
+            if (point == Point.P3) return p3;
+            if (point == Point.P4) return p4;
+            if (point == Point.P5) return p5;
+            if (point == Point.P6) return p6;
+            if (point == Point.P7) return p7;
+            return null;
+        }
     }
 
     public class FieldClass // Everything shown in the form is from this class

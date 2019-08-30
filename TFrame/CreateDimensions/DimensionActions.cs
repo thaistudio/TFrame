@@ -13,54 +13,70 @@ namespace TFrame
 
         }
 
+        /// <summary>
+        /// Entry command from cmdDimensions
+        /// </summary>
+        /// <param name="section"></param>
         public static void DetailSection(Section section)
         {
             Transaction t = new Transaction(section.ViewSection.Document);
             t.Start("Create Dimension");
 
+            // Find references
             FindReferenceInView(section, UVPosition.Left);
             FindReferenceInView(section, UVPosition.Right);
             FindReferenceInView(section, UVPosition.Down);
-            CreateDimension(section);
 
+            // Create dimension and place break line
+            CreateDimension(section);
             section.ViewSection.CropBoxVisible = false;
+
             t.Commit();
         }
 
+        /// <summary>
+        /// Find dimensionable references of all beams in a view section. This method is repeated for left, right and down position.
+        /// One DimensionSet contains all dimensionable references of all beams in a view section
+        /// </summary>
+        /// <param name="section"></param>
+        /// <param name="uvPos"></param>
         public static void FindReferenceInView(Section section, UVPosition uvPos)
         {
             View view = section.ViewSection;
 
             // Find all beams in view
-            ICollection<ElementId> viewHostElementId = new FilteredElementCollector(view.Document).OfCategory(BuiltInCategory.OST_Views).ToElementIds();
-            viewHostElementId.Clear();
+            // Add host beam to excluding list
+            ICollection<ElementId> viewHostElementId = new List<ElementId>();
             viewHostElementId.Add(section.HostElement.Id);
-            FilteredElementCollector otherBeamsInView = 
-                new FilteredElementCollector(GlobalParams.Doccument, view.Id).Excluding(viewHostElementId).OfCategory(BuiltInCategory.OST_StructuralFraming); // Get other beams rather than host elem in view
 
+            // Get all beams in this section view rather than host elem in view
+            FilteredElementCollector otherBeamsInView = 
+                new FilteredElementCollector(GlobalParams.Doccument, section.ViewSection.Id).Excluding(viewHostElementId).OfCategory(BuiltInCategory.OST_StructuralFraming); 
+            
+            // Create a new instance of DimensionSet
             DimensionSet dimensionSet = new DimensionSet(section, uvPos);
 
-            // The host beam will belong to both direction
+            // The host beam will belong to both position left and right
             Element hostBeam = section.HostElement;
-            dimensionSet.GetReferencesOfBeam(hostBeam);
+            dimensionSet.CollectReferencesOfBeam(hostBeam);
 
             // If there are other beams rather than just the host beam, sort them by position: left and right
             if (otherBeamsInView.GetElementCount() > 0 && uvPos != UVPosition.Down) 
             {
                 foreach (Element beam in otherBeamsInView)
                 {
-                    if (BeamIntersectsCropBox(beam, section.ViewerBoundingBox, uvPos))
+                    if (BeamIntersectsCropBox(section, beam, uvPos))
                     {
-                        dimensionSet.GetReferencesOfBeam(beam);
-                        PlaceBreakLine(dimensionSet, beam);
-                    }
-                    else 
-                    {
-                        if (BeamIsOnPosition(beam, uvPos, section))
+                        try
                         {
-                            dimensionSet.GetReferencesOfBeam(beam);
+                            dimensionSet.CollectReferencesOfBeam(beam);
                             PlaceBreakLine(dimensionSet, beam);
                         }
+                        catch (Exception ex)
+                        {
+                            GlobalParams.AddException(ex);
+                        }
+                        
                     }
                 }
             }
@@ -68,76 +84,87 @@ namespace TFrame
         }
 
         /// <summary>
-        /// Check if a beam intersects with the view's crop box
+        /// Check if a beam intersects with the view section's crop box position (left/right/bottom face of the view section)
+        /// Points on view section boundary will be projected to the beam in question's bottom face. 
+        /// Starting point (viewer bb's max/min) will be checked first. If its projection is not on beam's face. Move to the next point 0.2 ft away in beam end0->end1 direction.
+        /// Repeat the moving process until a point is on the face or the moving distance is greater than view section's limit (ZMaxExtra).
         /// </summary>
-        /// <param name="beam"></param>
-        /// <param name="boundingBox"></param>
-        /// <param name="uvPosition"></param>
+        /// <param name="beam">The beam that will be checked</param>
+        /// <param name="section">The section that will be checked</param>
+        /// <param name="uvPosition">Position of the view section that will be checked</param>
         /// <returns></returns>
-        static bool BeamIntersectsCropBox(Element beam, BoundingBoxXYZ boundingBox, UVPosition uvPosition)
+        static bool BeamIntersectsCropBox(Section section, Element beam, UVPosition uvPosition)
         {
-            // Need to get the bottom face of the beam to determine its location, based on the projection of the viewer's bounding box's max point
-            // Project max point to botFace to determine beam position
-            Face botFace = BeamTools.GetBeamFace(beam, BeamFace.Face4);
-            IntersectionResult projectedPointOnBotFace;
-            if (uvPosition == UVPosition.Left) projectedPointOnBotFace = botFace.Project(boundingBox.Max);
-            else projectedPointOnBotFace = botFace.Project(boundingBox.Min);
+            // Get bottom face of the beam in question
+            Face beamBotFace = BeamTools.GetBeamFace(beam, BeamFace.Face4);
 
-            if (projectedPointOnBotFace != null) return true;
-            else return false;
+            // Find the first point on view section's boundary
+            XYZ point = null;
+            if (uvPosition == UVPosition.Left) point = section.ViewerBoundingBox.Max;
+            if (uvPosition == UVPosition.Right) point = section.ViewerBoundingBox.Min;
+            
+            // Check if the beam intersects with the view section's boundary
+            return IsProjectedPointOnFace(point, beamBotFace, section, uvPosition);
         }
 
         /// <summary>
-        /// Check if a beam is on uvPosition of the view
+        /// This is a recursion, repeating until found a point on beam's bot face or the moving distance is greater than ZMaxExtra
         /// </summary>
-        /// <param name="beam"></param>
+        /// <param name="point">A point from the view section lest/right face</param>
+        /// <param name="face">Bottom/top face of the beam in question</param>
+        /// <param name="section">The section in question</param>
         /// <param name="uvPosition"></param>
-        /// <param name="section"></param>
-        /// <param name="tView"></param>
         /// <returns></returns>
-        static bool BeamIsOnPosition(Element beam, UVPosition uvPosition, Section section)
+        static bool IsProjectedPointOnFace(XYZ point, Face face, Section section, UVPosition uvPosition)
         {
-            View view = section.ViewSection;
-            // Need to get the bottom face of the beam to determine its location, based on the projection of the viewer's bounding box's max point
-            // Project max point to botFace to determine beam position
-            Face botFace = BeamTools.GetBeamFace(beam, BeamFace.Face4);
+            // Local fields
+            bool result;
+            Element hostBeam = section.HostElement; // Host beam of the view section
 
-            XYZ horizontalVector = view.RightDirection;
-            XYZ dummyPoint = null;
-
-            if (uvPosition == UVPosition.Left)
-            { 
-                // Create a dummy point 100mm from host beam's left edge to check if this beam is left or right
-                dummyPoint = GeometryTools.GetPointParallelToLineAtDistance
-                    (new XYZ(), horizontalVector, section.ViewerBoundingBox.Max, section.XMaxExtra - UnitUtils.ConvertToInternalUnits(0.05, DisplayUnitType.DUT_METERS));
-            }
-            else
+            // Check if point's projection in beam (not host beam) is valid
+            IntersectionResult intersection = face.Project(point);
+            if (intersection != null) return true; // If not null, then the beam in question intersects with the view section 
+            else // If null, move the point to a distance 0.2 ft in host beam direction
             {
-                // Create a dummy point 100mm from host beam's left edge to check if this beam is left or right
-                dummyPoint = GeometryTools.GetPointParallelToLineAtDistance
-                    (new XYZ(), horizontalVector, section.ViewerBoundingBox.Max, section.XMaxExtra + BeamTools.GetBeamDims(section.HostElement)[0] + UnitUtils.ConvertToInternalUnits(0.05, DisplayUnitType.DUT_METERS));
-            }
+                XYZ movedPoint = GeometryTools.GetPointParallelToLineAtDistance(BeamTools.GetBeamEnds(hostBeam)[0], BeamTools.GetBeamEnds(hostBeam)[1], point, 0.2);
+                if (uvPosition == UVPosition.Left)
+                {
+                    // If the moving distance is greater than view section limit, and yet a point can be projected to face. Then the beam does not intersect with the view section
+                    if (movedPoint.DistanceTo(section.ViewerBoundingBox.Max) > section.ZMaxExtra) return false; 
+                }
+                if (uvPosition == UVPosition.Right)
+                {
+                    if (movedPoint.DistanceTo(section.ViewerBoundingBox.Min) > section.ZMaxExtra) return false;
+                }
 
-            IntersectionResult projectedDummyPointOnBotFace = botFace.Project(dummyPoint);
-            if (projectedDummyPointOnBotFace == null) return false;
-            else return true;
+                // The code reaches here means the moving distance is still within view section limit. Keep moving
+                result = IsProjectedPointOnFace(movedPoint, face, section, uvPosition);
+                return result;
+            }
         }
 
+        /// <summary>
+        /// Create dimensions for section
+        /// </summary>
+        /// <param name="section"></param>
         public static void CreateDimension(Section section)
         {
             Document doc = section.HostElement.Document;
 
+            // There are 4 dimension sets in a section: left, right, up and down
             foreach (DimensionSet dimensionSet in section.DimensionSets)
             {
+                // Create regular dimensions for all references
                 Line line = CreateDimensionLine(dimensionSet, false);
                 ReferenceArray referenceArray = new ReferenceArray();
                 foreach (DimensionableReference reference in dimensionSet.References)
                 {
                     referenceArray.Append(reference.RevitReference);
                 }
-
                 Dimension dimension = doc.Create.NewDimension(section.ViewSection, line, referenceArray);
+                dimension.DimensionType = BeamDimensionData.Singleton.DimensionType;
 
+                // If there are overall dimensions, create them
                 if (dimensionSet.HasOverallDimension)
                 {
                     ReferenceArray overallReferences = new ReferenceArray();
@@ -151,16 +178,14 @@ namespace TFrame
                     Dimension overallDimension = doc.Create.NewDimension(section.ViewSection, line, overallReferences);
                     overallDimension.DimensionType = BeamDimensionData.Singleton.DimensionType;
                 }
-                dimension.DimensionType = BeamDimensionData.Singleton.DimensionType;
-                var l = dimension.DimensionType.Name;
             }
         }
 
         /// <summary>
-        /// Create line for dimensions
+        /// Create line for a dimension
         /// </summary>
         /// <param name="dimensionSet"></param>
-        /// <param name="dimensionsSpacing">Spacing betwwen 2 dimensions in case there are more than 1 dim</param>
+        /// <param name="isOverallDimension"></param>
         /// <returns></returns>
         static Line CreateDimensionLine(DimensionSet dimensionSet, bool isOverallDimension)
         {
@@ -170,35 +195,40 @@ namespace TFrame
             Section section = dimensionSet.Section;
             UVPosition uvPos = dimensionSet.Position;
 
-            XYZ downDirection = new XYZ(0, 0, -1);
-            XYZ upDirection = new XYZ(0, 0, 1);
             XYZ secondPoint = null;
             XYZ firstPoint = CalculateDimensionOrigin(dimensionSet, isOverallDimension);
             if (uvPos == UVPosition.Left)
             {
                 secondPoint = GeometryTools.GetPointParallelToLineAtDistance
-                    (new XYZ(), downDirection, firstPoint, 1);
+                    (XYZ.Zero, XYZ.BasisZ.Negate(), firstPoint, 1);
             }
             else if (uvPos == UVPosition.Right)
             {
                 secondPoint = GeometryTools.GetPointParallelToLineAtDistance
-                     (new XYZ(), upDirection, firstPoint, 1);
+                     (XYZ.Zero, XYZ.BasisZ, firstPoint, 1);
             }
             else if (uvPos == UVPosition.Down)
             {
                 firstPoint = GeometryTools.GetPointParallelToLineAtDistance
-                    (new XYZ(), downDirection, section.ViewerBoundingBox.Max, section.YMaxExtra + BeamTools.GetBeamDims(section.HostElement)[1] + 0.5);
+                    (XYZ.Zero, XYZ.BasisZ.Negate(), section.ViewerBoundingBox.Max, section.YMaxExtra + BeamTools.GetBeamDims(section.HostElement)[1] + 0.5);
                 secondPoint = GeometryTools.GetPointParallelToLineAtDistance
-                    (new XYZ(), section.ViewSection.RightDirection, firstPoint, 1);
+                    (XYZ.Zero, section.ViewSection.RightDirection, firstPoint, 1);
             }
             line = Line.CreateBound(firstPoint, secondPoint);
             return line;
         }
 
+        /// <summary>
+        /// Get the first point of the dimension line
+        /// </summary>
+        /// <param name="dimensionSet"></param>
+        /// <param name="isOverallDimension"></param>
+        /// <returns></returns>
         static XYZ CalculateDimensionOrigin(DimensionSet dimensionSet, bool isOverallDimension)
         {
             XYZ origin = null;
 
+            // Spacing between dimensions in a dimension set
             double dimensionSpacing = 0;
             if (isOverallDimension) dimensionSpacing = dimensionSet.DimensionsSpacing;
 
@@ -206,31 +236,27 @@ namespace TFrame
             Section section = dimensionSet.Section;
             UVPosition uvPos = dimensionSet.Position;
 
-            // Get horizontal vector and coordinate origin
-            XYZ horzVector = section.ViewSection.RightDirection;
-            XYZ coorOrigin = new XYZ();
-
-            // Calculate beam dimensions
-            Element hostBeam = section.HostElement;
-            
             // Calculate the distance from the edge of the host beam to the bounding box boudary
-            //double edgeToBoundingBox;
-            //double dimToBeamEdge = .5; // dimensionSet.DimensionToBeamEdge;
+            // The first point is 0.5ft + dimensionSpacing from vierwer bb's max/min points
             if (uvPos == UVPosition.Left)
             {
-                //edgeToBoundingBox = section.XMaxExtra - hostWidth / 2;
-                origin = GeometryTools.GetPointParallelToLineAtDistance(horzVector, coorOrigin, section.ViewerBoundingBox.Max, .5 + dimensionSpacing); // dimToBeamEdge - edgeToBoundingBox);
+                origin = GeometryTools.GetPointParallelToLineAtDistance
+                    (section.ViewSection.RightDirection, XYZ.Zero, section.ViewerBoundingBox.Max, .5 + dimensionSpacing); 
             }
             else if (uvPos == UVPosition.Right)
             {
-                //edgeToBoundingBox = section.XMinExtra - hostWidth / 2;
-                origin = GeometryTools.GetPointParallelToLineAtDistance(coorOrigin, horzVector, section.ViewerBoundingBox.Min, .5 + dimensionSpacing); // dimToBeamEdge - edgeToBoundingBox);
+                origin = GeometryTools.GetPointParallelToLineAtDistance
+                    (XYZ.Zero, section.ViewSection.RightDirection, section.ViewerBoundingBox.Min, .5 + dimensionSpacing); 
             }
 
             return origin;
         }
 
-        // Place break line for side beams
+        /// <summary>
+        /// Place break line for side beams
+        /// </summary>
+        /// <param name="dimensionSet"></param>
+        /// <param name="beam"></param>
         public static void PlaceBreakLine(DimensionSet dimensionSet, Element beam)
         {
             XYZ coorOrigin = new XYZ();
@@ -242,19 +268,20 @@ namespace TFrame
             int positionCoefficient = 1; // 1 when on right, -1 on left
 
             // Place Family Instance
-
             // Find break line origin a.k.a. mid point between top and bot faces of the side beams
             // Calculate mid-elevation of side beams' top and bot faces
             double topElevation = BeamTools.GetBeamElevation(beam, BeamFace.Face2);
             double botElevation = BeamTools.GetBeamElevation(beam, BeamFace.Face4);
-            double midElevation = (topElevation + botElevation) / 2;
+            double midElevation = (topElevation + botElevation) / 2; 
             double midElevToBbBoundary = 0; // Distance from the mid point to bounding box max (left beams), or min (right beams) points
             XYZ movedPoint = null; // Move max/min point of bounding box horizontally 0.1 to show avoid break line from being cut by the bounding box
             XYZ origin = null; // Origin point of break line
             if (dimensionSet.Position == UVPosition.Left) // Left beam
             {
-                midElevToBbBoundary = section.ViewerBoundingBox.Max.Z - midElevation;
+                // Place break line 0.1 ft closer to the view center
                 movedPoint = GeometryTools.GetPointParallelToLineAtDistance(XYZ.Zero, section.ViewSection.RightDirection, section.ViewerBoundingBox.Max, 0.1);
+                midElevToBbBoundary = section.ViewerBoundingBox.Max.Z - midElevation;
+                // Origin is movedPoint moved down a distance of midElevToBbBoundary
                 origin = GeometryTools.GetPointParallelToLineAtDistance(XYZ.Zero, XYZ.BasisZ.Negate(), movedPoint, midElevToBbBoundary);
                 positionCoefficient = -1;
             }
@@ -285,6 +312,27 @@ namespace TFrame
             double beamHeight = BeamTools.GetBeamDims(beam)[1];
             breakLine.LookupParameter("right")?.Set((beamHeight / 2) + 0.1);
             breakLine.LookupParameter("left")?.Set((beamHeight / 2) + 0.1);
+        }
+
+        public static void DetailLevelsInCrossSection(Section section)
+        {
+            ViewSection view = section.ViewSection;
+            XYZ rightDirection = view.RightDirection;
+
+            // Search levels in view
+            List<Level> levels = FamilyTools.SearchElementsByType<Level>(view.Document, false, view);
+            foreach (Level level in levels)
+            {
+                XYZ maxPoint = level.get_BoundingBox(view).Max;
+                XYZ minPoint = level.get_BoundingBox(view).Min;
+
+                // Move max point
+                XYZ movedMaxPoint = GeometryTools.GetPointParallelToLineAtDistance(XYZ.Zero, -rightDirection, maxPoint, 0.5);
+                XYZ movedMinPoint = GeometryTools.GetPointParallelToLineAtDistance(XYZ.Zero, rightDirection, minPoint, 0.5);
+                level.get_BoundingBox(view).Max = movedMaxPoint;
+                level.get_BoundingBox(view).Min = movedMinPoint;
+
+            }
         }
     }
 }

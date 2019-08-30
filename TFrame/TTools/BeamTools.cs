@@ -320,7 +320,7 @@ namespace TFrame
         /// <param name="points">Use GetPointsOfFace. Use top/bot face as BeamFace(Face2/Face4)</param>
         /// <param name="point">The point to find</param>
         /// <returns></returns>
-        public static XYZ GetBeamPoint(Element e, List<XYZ> points, BeamPoint point)
+        public static XYZ GetBeamPoint(Element e, List<XYZ> points, Point point)
         {
             XYZ desiredPoint = new XYZ();
 
@@ -335,32 +335,32 @@ namespace TFrame
             XYZ p2 = GeometryTools.GetPointAtDistNormalToAVector(p1.Subtract(p0), p0, 1, p0.Z); // p0p1 _|_ p0p2
             XYZ p3 = GeometryTools.GetPointAtDistNormalToAVector(p0.Subtract(p1), p1, 1, p0.Z); // p0p1 _|_ p0p3
 
-            if (point == BeamPoint.P0 || point == BeamPoint.P3) // 2 bottom points
+            if (point == Point.P0 || point == Point.P3) // 2 bottom points
             {
                 List<XYZ> p03 = points.OrderBy(x => GeometryTools.AngleBetween2Vector(p0, p2, p0, x)).ToList();
-                if (point == BeamPoint.P3) desiredPoint = p03.FirstOrDefault();
-                if (point == BeamPoint.P0) desiredPoint = p03.LastOrDefault();
+                if (point == Point.P3) desiredPoint = p03.FirstOrDefault();
+                if (point == Point.P0) desiredPoint = p03.LastOrDefault();
             }
 
-            if (point == BeamPoint.P4 || point == BeamPoint.P7) // The other bottom points
+            if (point == Point.P4 || point == Point.P7) // The other bottom points
             {
                 List<XYZ> p47 = points.OrderBy(x => GeometryTools.AngleBetween2Vector(p1, p3, p1, x)).ToList(); // The angle is computed with p1p3 to return first and last members
-                if (point == BeamPoint.P4) desiredPoint = p47.FirstOrDefault();
-                if (point == BeamPoint.P7) desiredPoint = p47.LastOrDefault();
+                if (point == Point.P4) desiredPoint = p47.FirstOrDefault();
+                if (point == Point.P7) desiredPoint = p47.LastOrDefault();
             }
 
-            if (point == BeamPoint.P1 || point == BeamPoint.P2) // 2 top points
+            if (point == Point.P1 || point == Point.P2) // 2 top points
             {
                 List<XYZ> p12 = points.OrderBy(x => GeometryTools.AngleBetween2Vector(p0, p2, p0, x)).ToList();
-                if (point == BeamPoint.P2) desiredPoint = p12.FirstOrDefault();
-                if (point == BeamPoint.P1) desiredPoint = p12.LastOrDefault();
+                if (point == Point.P2) desiredPoint = p12.FirstOrDefault();
+                if (point == Point.P1) desiredPoint = p12.LastOrDefault();
             }
 
-            if (point == BeamPoint.P5 || point == BeamPoint.P6) // The other bottom points
+            if (point == Point.P5 || point == Point.P6) // The other bottom points
             {
                 List<XYZ> p56 = points.OrderBy(x => GeometryTools.AngleBetween2Vector(p1, p3, p1, x)).ToList(); // The angle is computed with p1p3 to return first and last members
-                if (point == BeamPoint.P5) desiredPoint = p56.FirstOrDefault();
-                if (point == BeamPoint.P6) desiredPoint = p56.LastOrDefault();
+                if (point == Point.P5) desiredPoint = p56.FirstOrDefault();
+                if (point == Point.P6) desiredPoint = p56.LastOrDefault();
             }
             return desiredPoint;
         }
@@ -677,7 +677,7 @@ namespace TFrame
         Face0 = 0, Face1 = 1, Face2, Face3 = 3, Face4 = 4, Face5 = 5
     }
 
-    public enum BeamPoint
+    public enum Point
     {
         P0, P1, P2, P3, P4, P5, P6, P7, P8
     }

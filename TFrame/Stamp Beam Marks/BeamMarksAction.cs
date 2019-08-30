@@ -341,7 +341,6 @@ namespace TFrame
                 XYZ p1 = BeamTools.GetBeamEnds(e)[1];
 
                 midPoint = GeometryTools.GetMidPoint(p0, p1);
-
             }
             return midPoint;
         }

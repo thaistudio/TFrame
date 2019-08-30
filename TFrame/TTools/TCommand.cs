@@ -89,6 +89,7 @@ namespace TFrame
             GlobalParams.Doccument = doc;
             GlobalParams.ExternalCommandData = commandData;
             GlobalParams.UIDocument = uiDoc;
+            SelectionTools sel = new SelectionTools();
         }
     }
 
