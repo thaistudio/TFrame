@@ -33,178 +33,176 @@ namespace TFrame
         public double stirrupCoeff = 1;
         public double botCoeff = 1;
 
-        FamilyTools famTools;
-        SectionTools secTools;
-
         public TagActions(ExternalCommandData commandData)
         {
             externalCommandData = commandData;
             _doc = commandData.Application.ActiveUIDocument.Document;
             _uiDoc = commandData.Application.ActiveUIDocument;
-            secTools = new SectionTools(commandData);
         }
 
         public void TagMultiRebars(Element selectedBeam, Dictionary<Section, Dictionary<List<List<Rebar>>, List<Rebar>>> big)
         {
-                foreach (KeyValuePair<Section, Dictionary<List<List<Rebar>>, List<Rebar>>> pair in big)
+            foreach (KeyValuePair<Section, Dictionary<List<List<Rebar>>, List<Rebar>>> pair in big)
+            {
+                Dictionary<List<List<Rebar>>, List<Rebar>> standardStirrupDic = pair.Value;
+                XYZ paraVector = BeamTools.GetUnitParallelVector(BeamTools.GetBeamEnds(selectedBeam)[0], BeamTools.GetBeamEnds(selectedBeam)[1]);
+                XYZ normalVector = BeamTools.GetUnitNormalVector(BeamTools.GetBeamEnds(selectedBeam)[0], BeamTools.GetBeamEnds(selectedBeam)[1]);
+
+                Section section = pair.Key;
+                double h = BeamTools.GetBeamDims(selectedBeam)[0];
+                ElementId ownerViewId = section.ViewSection.Id;
+                XYZ origin = section.Origin; // Origin of the section, a.k.a the center of the beam
+
+                foreach (KeyValuePair<List<List<Rebar>>, List<Rebar>> standardStirrupPair in standardStirrupDic)
                 {
-                    Dictionary<List<List<Rebar>>, List<Rebar>> standardStirrupDic = pair.Value;
-                    XYZ paraVector = BeamTools.GetUnitParallelVector(BeamTools.GetBeamEnds(selectedBeam)[0], BeamTools.GetBeamEnds(selectedBeam)[1]);
-                    XYZ normalVector = BeamTools.GetUnitNormalVector(BeamTools.GetBeamEnds(selectedBeam)[0], BeamTools.GetBeamEnds(selectedBeam)[1]);
+                    List<List<Rebar>> sortedRebars = standardStirrupPair.Key;
+                    List<Rebar> stirrups = standardStirrupPair.Value;
 
-                    Section section = pair.Key;
-                    double h = BeamTools.GetBeamDims(selectedBeam)[0];
-                    ElementId ownerViewId = section.ViewSection.Id;
-                    XYZ origin = section.Origin; // Origin of the section, a.k.a the center of the beam
-
-                    foreach (KeyValuePair<List<List<Rebar>>, List<Rebar>> standardStirrupPair in standardStirrupDic)
+                    for (int j = 0; j < sortedRebars.Count; j++) // Row level
                     {
-                        List<List<Rebar>> sortedRebars = standardStirrupPair.Key;
-                        List<Rebar> stirrups = standardStirrupPair.Value;
-
-                        for (int j = 0; j < sortedRebars.Count; j++) // Row level
+                        var v1 = sortedRebars[j];
+                        double a = 0; // Add a space between 2 tags in z direction
+                        for (int i = 0; i < sortedRebars[j].Count; i++) // Rebar level
                         {
-                            var v1 = sortedRebars[j];
-                            double a = 0; // Add a space between 2 tags in z direction
-                            for (int i = 0; i < sortedRebars[j].Count; i++) // Rebar level
+                            Rebar rebar = sortedRebars[j][i];
+                            ElementId shapeId = rebar.GetShapeId();
+                            RebarShape shape = (RebarShape)_doc.GetElement(shapeId);
+
+                            // Single tag
+                            if (rebar.Quantity == 1)
                             {
-                                Rebar rebar = sortedRebars[j][i];
-                                ElementId shapeId = rebar.GetShapeId();
-                                RebarShape shape = (RebarShape)_doc.GetElement(shapeId);
+                                XYZ rebarCoordinate = RebarTools.GetRebarCoorAtSection(rebar, section, _doc);
+                                double beamMidElev = (selectedBeam.get_BoundingBox(section.ViewSection).Max.Z + selectedBeam.get_BoundingBox(section.ViewSection).Min.Z) / 2;
+                                double beamHeightNoRebarCover =
+                                BeamTools.GetBeamDims(selectedBeam)[1] - BeamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_BOTTOM) 
+                                - BeamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_TOP);
+                                double coeff = 1;
+                                double sideCoeff;
 
-                                if (rebar.Quantity == 1)
+                                XYZ leaderEnd, leaderElbow, tagHeadPosition;
+
+                                if (sortedRebars[j].Count == 1) a = 0;
+
+                                if (j == sortedRebars.Count - 1)
                                 {
-                                    XYZ rebarCoordinate = RebarTools.GetRebarCoorAtSection(rebar, section, _doc);
-                                    double beamMidElev = (selectedBeam.get_BoundingBox(section.ViewSection).Max.Z + selectedBeam.get_BoundingBox(section.ViewSection).Min.Z) / 2;
-                                    double beamHeightNoRebarCover = 
-                                    BeamTools.GetBeamDims(selectedBeam)[1] - BeamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_BOTTOM) - BeamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_TOP);
-                                    double coeff = 1;
-                                    double sideCoeff;
-
-                                    XYZ leaderEnd, leaderElbow, tagHeadPosition;
-
-                                    if (sortedRebars[j].Count == 1) a = 0;
-
-                                    if (j == sortedRebars.Count - 1)
-                                    {
-                                        coeff = -1;
-                                        sideCoeff = botCoeff;
-                                    }
-                                    else sideCoeff = topCoeff;
-
-                                    leaderEnd = rebarCoordinate;
-                                    leaderElbow = new XYZ(leaderEnd.X, leaderEnd.Y, leaderEnd.Z + (a + firstDimensionZ) * coeff);
-                                    tagHeadPosition = GeometryTools.GetPointAtDistNormalToAVector(paraVector, leaderElbow, l * sideCoeff, leaderElbow.Z);
-
-                                Autodesk.Revit.DB.Reference reference = new Autodesk.Revit.DB.Reference(rebar);
-
-                                    IndependentTag tagRebars = IndependentTag.Create(_doc, desiredFamily, section.ViewSection.Id, reference, true, TagOrientation.Horizontal, leaderEnd);
-                                    tagRebars.LeaderEndCondition = LeaderEndCondition.Free;
-                                    tagRebars.LeaderElbow = leaderElbow;
-                                    tagRebars.LeaderEnd = leaderEnd;
-                                    tagRebars.TagHeadPosition = tagHeadPosition;
-
-                                    a += zIncreament;
+                                    coeff = -1;
+                                    sideCoeff = botCoeff;
                                 }
+                                else sideCoeff = topCoeff;
 
-                                else if (rebar.Quantity > 1)
-                                {
-                                    // Set tag options
-                                    double rebarElev = RebarTools.GetRebarElevation(rebar, section, _doc); //tStore.GetInfoFromElement<double>(rebar, "Elevation", DisplayUnitType.DUT_MILLIMETERS);
-                                    double distToTopFace = RebarTools.GetDistanceFromRebarToEdges(rebar, section, _doc, 2);
-                                    double distToBotFace = RebarTools.GetDistanceFromRebarToEdges(rebar, section, _doc, 3);
-                                    double desiredZ;  // Height of tag comparing to top of the beam
-                                    double sideCoeff;
+                                leaderEnd = rebarCoordinate;
+                                leaderElbow = new XYZ(leaderEnd.X, leaderEnd.Y, leaderEnd.Z + (a + firstDimensionZ) * coeff);
+                                tagHeadPosition = GeometryTools.GetPointAtDistNormalToAVector(paraVector, leaderElbow, l * sideCoeff, leaderElbow.Z);
 
-                                    //if (sortedRebarsInRows[j].Count > 1) a = 0.4;
-                                    //else a = 0;
-                                    if (j == 0) // Top row
-                                    {
-                                        desiredZ = rebarElev + firstDimensionZ + a;
-                                        sideCoeff = topCoeff;
-                                    }
+                                Reference reference = new Reference(rebar);
 
-                                    else if (j == sortedRebars.Count - 1) // Bottom row
-                                    {
-                                        desiredZ = rebarElev - a - firstDimensionZ;
-                                        sideCoeff = botCoeff;
-                                    }
-                                    else // All other rows
-                                    {
-                                        if (distToBotFace > distToTopFace) // Top half
-                                        {
-                                            desiredZ = rebarElev - a - firstDimensionZ;
-                                            sideCoeff = topCoeff;
-                                        }
-                                        else if (distToBotFace < distToTopFace) // Bottom half
-                                        {
-                                            desiredZ = rebarElev + a + firstDimensionZ;
-                                            sideCoeff = botCoeff;
-                                        }
-                                        else
-                                        {
-                                            desiredZ = a;
-                                            sideCoeff = 1;
-                                        }
-                                    }
+                                IndependentTag singleTag = IndependentTag.Create(_doc, desiredFamily, section.ViewSection.Id, reference, true, TagOrientation.Horizontal, leaderEnd);
+                                singleTag.LeaderEndCondition = LeaderEndCondition.Free;
+                                singleTag.LeaderElbow = leaderElbow;
+                                singleTag.LeaderEnd = leaderEnd;
+                                singleTag.TagHeadPosition = tagHeadPosition;
 
-                                    List<ElementId> rebarIds = new List<ElementId>();
-                                    rebarIds.Add(rebar.Id);
-                                    ICollection<ElementId> ICRebarIds = rebarIds;
+                                section.RebarTagIds.Add(singleTag.Id);
 
-                                    MultiReferenceAnnotationType multiReference = GetMultiRefAnnotationType()[0];
-                                    MultiReferenceAnnotationOptions options = new MultiReferenceAnnotationOptions(multiReference);
-                                    options.DimensionLineOrigin = new XYZ(origin.X, origin.Y, desiredZ);
-                                    options.TagHeadPosition = GetTagHeadPosition(paraVector, options.DimensionLineOrigin, l * sideCoeff, desiredZ);
-                                    options.DimensionLineDirection = normalVector;
-                                    options.DimensionPlaneNormal = section.ViewSection.ViewDirection;
-                                    options.DimensionStyleType = DimensionStyleType.Linear;
-                                    options.SetElementsToDimension(ICRebarIds);
-                                    MultiReferenceAnnotation multiTag = MultiReferenceAnnotation.Create(_doc, ownerViewId, options);
-
-                                    // Set dimension style
-                                    ElementId dimId = multiTag.DimensionId;
-                                    Dimension dim = (Dimension)_doc.GetElement(dimId);
-                                    dim.DimensionType = dimType;
-
-                                    // Set tag style
-                                    ElementId tagId = multiTag.TagId;
-                                    IndependentTag tag = (IndependentTag)_doc.GetElement(tagId);
-                                    ElementId id = tag.GetTypeId();
-                                    tag.ChangeTypeId(tagTypeId);
-                                    ElementId id1 = tag.GetTypeId();
-
-                                    //Set multi tag type
-                                    multiTag.ChangeTypeId(multiTagTypeId);
-
-                                    a += zIncreament;
-                                }
+                                a += zIncreament;
                             }
 
-                        }
+                            else if (rebar.Quantity > 1)
+                            {
+                                // Set tag options
+                                double rebarElev = RebarTools.GetRebarElevation(rebar, section, _doc); //tStore.GetInfoFromElement<double>(rebar, "Elevation", DisplayUnitType.DUT_MILLIMETERS);
+                                double distToTopFace = RebarTools.GetDistanceFromRebarToEdges(rebar, section, _doc, 2);
+                                double distToBotFace = RebarTools.GetDistanceFromRebarToEdges(rebar, section, _doc, 3);
+                                double desiredZ;  // Height of tag comparing to top of the beam
+                                double sideCoeff;
 
-                        foreach (Rebar stirrup in stirrups)
-                        {
-                            double beamWidthNoRebarCover = BeamTools.GetBeamDims(selectedBeam)[0] - 2 * BeamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_OTHER);
+                                //if (sortedRebarsInRows[j].Count > 1) a = 0.4;
+                                //else a = 0;
+                                if (j == 0) // Top row
+                                {
+                                    desiredZ = rebarElev + firstDimensionZ + a;
+                                    sideCoeff = topCoeff;
+                                }
 
-                            double stirrupD = stirrup.get_Parameter(BuiltInParameter.REBAR_INSTANCE_BAR_DIAMETER).AsDouble(); // Can write this as a method
-                            double d = ((beamWidthNoRebarCover - stirrupD) / 2 + stirrupTagLength) * stirrupCoeff;
+                                else if (j == sortedRebars.Count - 1) // Bottom row
+                                {
+                                    desiredZ = rebarElev - a - firstDimensionZ;
+                                    sideCoeff = botCoeff;
+                                }
+                                else // All other rows
+                                {
+                                    if (distToBotFace > distToTopFace) // Top half
+                                    {
+                                        desiredZ = rebarElev - a - firstDimensionZ;
+                                        sideCoeff = topCoeff;
+                                    }
+                                    else if (distToBotFace < distToTopFace) // Bottom half
+                                    {
+                                        desiredZ = rebarElev + a + firstDimensionZ;
+                                        sideCoeff = botCoeff;
+                                    }
+                                    else
+                                    {
+                                        desiredZ = a;
+                                        sideCoeff = 1;
+                                    }
+                                }
 
-                            XYZ tagHeadPosition = GeometryTools.GetPointAtDistNormalToAVector(paraVector, origin, d, origin.Z);
-                            
-                            XYZ leaderEnd = GeometryTools.GetPointAtDistNormalToAVector(paraVector, origin, d - stirrupTagLength * stirrupCoeff, origin.Z);
-                            XYZ leaderElbow = leaderEnd; // geoTools.GetPointAtDistNormalToAVector(paraVector, origin, d, origin.Z);
+                                List<ElementId> rebarIds = new List<ElementId>();
+                                rebarIds.Add(rebar.Id);
+                                ICollection<ElementId> ICRebarIds = rebarIds;
 
-                        Autodesk.Revit.DB.Reference reference = new Autodesk.Revit.DB.Reference(stirrup);
+                                MultiReferenceAnnotationType multiReference = GetMultiRefAnnotationType()[0];
+                                MultiReferenceAnnotationOptions options = new MultiReferenceAnnotationOptions(multiReference);
+                                options.DimensionLineOrigin = new XYZ(origin.X, origin.Y, desiredZ);
+                                options.TagHeadPosition = GetTagHeadPosition(paraVector, options.DimensionLineOrigin, l * sideCoeff, desiredZ);
+                                options.DimensionLineDirection = normalVector;
+                                options.DimensionPlaneNormal = section.ViewSection.ViewDirection;
+                                options.DimensionStyleType = DimensionStyleType.Linear;
+                                options.SetElementsToDimension(ICRebarIds);
+                                MultiReferenceAnnotation multiTag = MultiReferenceAnnotation.Create(_doc, ownerViewId, options);
 
-                            IndependentTag tagRebars = IndependentTag.Create(_doc, stirrupDesiredFamily, section.ViewSection.Id, reference, true, TagOrientation.Horizontal, leaderEnd);
-                            tagRebars.LeaderEndCondition = LeaderEndCondition.Free;
-                            tagRebars.LeaderElbow = leaderElbow;
-                            tagRebars.LeaderEnd = leaderEnd;
-                            tagRebars.TagHeadPosition = tagHeadPosition;
+                                // Create new symbol settings and change tag type and dimension style
+                                MultiReferenceAnnotationType multiTagSymbol = (MultiReferenceAnnotationType)(_doc.GetElement(multiTagTypeId));
+                                multiTagSymbol.TagTypeId = tagTypeId;
+                                multiTagSymbol.DimensionStyleId = dimType.Id;
+                                multiTag.ChangeTypeId(multiTagTypeId);
+
+                                section.RebarTagIds.Add(multiTag.Id);
+                                
+                                a += zIncreament;
+                            }
                         }
                     }
+
+                    foreach (Rebar stirrup in stirrups)
+                    {
+                        double beamWidthNoRebarCover = BeamTools.GetBeamDims(selectedBeam)[0] - 2 * BeamTools.GetRebarCover(selectedBeam, _doc, BuiltInParameter.CLEAR_COVER_OTHER);
+
+                        double stirrupD = stirrup.get_Parameter(BuiltInParameter.REBAR_INSTANCE_BAR_DIAMETER).AsDouble(); // Can write this as a method
+                        double d = ((beamWidthNoRebarCover - stirrupD) / 2 + stirrupTagLength) * stirrupCoeff;
+
+                        XYZ tagHeadPosition = GeometryTools.GetPointAtDistNormalToAVector(paraVector, origin, d, origin.Z);
+
+                        XYZ leaderEnd = GeometryTools.GetPointAtDistNormalToAVector(paraVector, origin, d - stirrupTagLength * stirrupCoeff, origin.Z);
+                        XYZ leaderElbow = leaderEnd; // geoTools.GetPointAtDistNormalToAVector(paraVector, origin, d, origin.Z);
+
+                        Reference reference = new Reference(stirrup);
+
+                        IndependentTag stirrupTag = IndependentTag.Create(_doc, stirrupDesiredFamily, section.ViewSection.Id, reference, true, TagOrientation.Horizontal, leaderEnd);
+                        stirrupTag.LeaderEndCondition = LeaderEndCondition.Free;
+                        stirrupTag.LeaderElbow = leaderElbow;
+                        stirrupTag.LeaderEnd = leaderEnd;
+                        stirrupTag.TagHeadPosition = tagHeadPosition;
+
+                        section.RebarTagIds.Add(stirrupTag.Id);
+                    }
                 }
+
+                // Save tag ids to section class
+                section.RebarTagIdSchema = section.CreateSchema(section.FieldRebarTagIds, SchemaType.ArrayField, false, UnitType.UT_Undefined, "Holds multi rebar tag ids", section.RebarTagIds);
+                section.SaveArrayDataToViewSection(section.RebarTagIds, section.FieldRebarTagIds, DisplayUnitType.DUT_UNDEFINED, section.RebarTagIdSchema);
+            }
         }
 
         public void LoadTagFamily()

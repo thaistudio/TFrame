@@ -163,6 +163,7 @@ namespace TFrame
                 }
                 Dimension dimension = doc.Create.NewDimension(section.ViewSection, line, referenceArray);
                 dimension.DimensionType = BeamDimensionData.Singleton.DimensionType;
+                section.DimIds.Add(dimension.Id);
 
                 // If there are overall dimensions, create them
                 if (dimensionSet.HasOverallDimension)
@@ -177,8 +178,11 @@ namespace TFrame
                     line = CreateDimensionLine(dimensionSet, true);
                     Dimension overallDimension = doc.Create.NewDimension(section.ViewSection, line, overallReferences);
                     overallDimension.DimensionType = BeamDimensionData.Singleton.DimensionType;
+                    section.DimIds.Add(overallDimension.Id);
                 }
             }
+
+            section.SaveArrayDataToViewSection(section.DimIds, section.FieldDimIds, DisplayUnitType.DUT_UNDEFINED, null, false, UnitType.UT_Undefined, "Holds dim ids");
         }
 
         /// <summary>
@@ -239,15 +243,82 @@ namespace TFrame
             // Calculate the distance from the edge of the host beam to the bounding box boudary
             if (uvPos == UVPosition.Left)
             {
-                if (dimensionSet.HasOverallDimension) // When there are more than 1 dimension, the first point is 0.5ft + dimensionSpacing from vierwer bb's max/min points
+                if (dimensionSet.HasOverallDimension) // When there are more than 1 dimension, a.k.a there are side beams, 
+                                                      // the first point is 0.5ft + dimensionSpacing from vierwer bb's max/min points
                 {
-                    origin = GeometryTools.GetPointParallelToLineAtDistance
-                    (section.ViewSection.RightDirection, XYZ.Zero, section.ViewerBoundingBox.Max, 0.5 + dimensionSpacing);
+                    if (section.RebarTagIds.Count > 0)
+                    {
+                        XYZ movedMin = new XYZ(section.ViewerBoundingBox.Min.X, section.ViewerBoundingBox.Min.Y, section.ViewerBoundingBox.Max.Z);
+                        foreach (ElementId id in section.RebarTagIds)
+                        {
+                            Element element = section.ViewSection.Document.GetElement(id);
+                            if (element is IndependentTag) // Single tag
+                            {
+                                IndependentTag singleTag = (IndependentTag)element;
+                                XYZ tagHeadPosition = singleTag.TagHeadPosition;
+                                double distToMax = tagHeadPosition.DistanceTo(section.ViewerBoundingBox.Max);
+                                double distToMovedMin = tagHeadPosition.DistanceTo(movedMin);
+                                if (distToMax > distToMovedMin) continue;
+                                else
+                                {
+                                    XYZ parallelTagHead = GeometryTools.GetPointParallelToLineAtDistance
+                                        (XYZ.Zero, XYZ.BasisZ, section.ViewerBoundingBox.Min, tagHeadPosition.Z - section.ViewerBoundingBox.Min.Z);
+                                    double distToEnd = tagHeadPosition.DistanceTo(parallelTagHead);
+                                    double sectionWidth = section.ViewerBoundingBox.Max.DistanceTo(movedMin);
+                                    if (distToEnd < sectionWidth) origin = GeometryTools.GetPointParallelToLineAtDistance
+                                            (section.ViewSection.RightDirection, XYZ.Zero, tagHeadPosition, 0.5 + dimensionSpacing);
+                                    else
+                                    {
+                                        origin = GeometryTools.GetPointParallelToLineAtDistance
+                                            (section.ViewSection.RightDirection, XYZ.Zero, section.ViewerBoundingBox.Max, 0.5 + dimensionSpacing);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        origin = GeometryTools.GetPointParallelToLineAtDistance
+                            (section.ViewSection.RightDirection, XYZ.Zero, section.ViewerBoundingBox.Max, 0.5 + dimensionSpacing);
+                    }
                 }
                 else // When there is only 1 dim a.k.a. no side beam, dimension is 0.5ft away from host beam's side face
                 {
-                    origin = GeometryTools.GetPointParallelToLineAtDistance
-                    (section.ViewSection.RightDirection, XYZ.Zero, section.ViewerBoundingBox.Max, 0.5 - section.XMaxExtra);
+                    if (section.RebarTagIds.Count > 0)
+                    {
+                        XYZ movedMin = new XYZ(section.ViewerBoundingBox.Min.X, section.ViewerBoundingBox.Min.Y, section.ViewerBoundingBox.Max.Z);
+                        foreach (ElementId id in section.RebarTagIds)
+                        {
+                            Element element = section.ViewSection.Document.GetElement(id);
+                            if (element is IndependentTag) // Single tag
+                            {
+                                IndependentTag singleTag = (IndependentTag)element;
+                                XYZ tagHeadPosition = singleTag.TagHeadPosition;
+                                double distToMax = tagHeadPosition.DistanceTo(section.ViewerBoundingBox.Max);
+                                double distToMovedMin = tagHeadPosition.DistanceTo(movedMin);
+                                if (distToMax > distToMovedMin) continue;
+                                else
+                                {
+                                    XYZ parallelTagHead = GeometryTools.GetPointParallelToLineAtDistance
+                                        (XYZ.Zero, XYZ.BasisZ, section.ViewerBoundingBox.Min, tagHeadPosition.Z - section.ViewerBoundingBox.Min.Z);
+                                    double distToEnd = tagHeadPosition.DistanceTo(parallelTagHead);
+                                    double sectionWidth = section.ViewerBoundingBox.Max.DistanceTo(movedMin);
+                                    if (distToEnd < sectionWidth) origin = GeometryTools.GetPointParallelToLineAtDistance
+                                            (section.ViewSection.RightDirection, XYZ.Zero, tagHeadPosition, 0.5 + dimensionSpacing);
+                                    else
+                                    {
+                                        origin = GeometryTools.GetPointParallelToLineAtDistance
+                                            (section.ViewSection.RightDirection, XYZ.Zero, section.ViewerBoundingBox.Max, 0.5 + dimensionSpacing);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        origin = GeometryTools.GetPointParallelToLineAtDistance
+                            (section.ViewSection.RightDirection, XYZ.Zero, section.ViewerBoundingBox.Max, 0.5 - section.XMaxExtra);
+                    }
                 }
             }
             else if (uvPos == UVPosition.Right)

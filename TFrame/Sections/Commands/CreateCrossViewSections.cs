@@ -98,7 +98,10 @@ namespace TFrame
                         {
                             ViewSection viewSection = ViewSection.CreateSection(doc, sec.ViewFamilyType.Id, sec.BoundingBox);
                             viewSection.LookupParameter("T_Mark").Set(elem.LookupParameter("Mark").AsString());
-                            DataTools.AddInfoToElement<string>(viewSection, "CrossSection", "Direction", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
+
+                            Autodesk.Revit.DB.ExtensibleStorage.Schema crossSectionIDSchema = DataTools.CreateASchema<string>("CrossSection", SchemaType.SimpleField);
+                            DataTools.SaveSimpleDataToElement<string>(viewSection, "CrossSection", "Direction", DisplayUnitType.DUT_UNDEFINED, null,
+                                   false, UnitType.UT_Undefined, "Holds section's direction");
                             if (sec.ViewSectionName != null) viewSection.LookupParameter("T_SectionName").Set(sec.ViewSectionName);
                             viewSection.ViewTemplateId = sec.Template.Id;
                             viewSection.CropBoxVisible = false;

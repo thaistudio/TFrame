@@ -360,23 +360,71 @@ namespace TFrame
         }
         #endregion
 
-        public static void AddInfoToElement<T>(Element e, T info, string fieldName, UnitType unitType, DisplayUnitType displayUnitType)
+        #region Save/Load data to Revit element
+        public static void SaveSimpleDataToElement<T>(Element element, T data, string fieldName, DisplayUnitType displayUnitType, 
+            Schema schema = null, bool needUnit = false, UnitType unitType = UnitType.UT_Undefined, 
+            string documentation = null)
         {
 
             // Delete existing schemas
-            IList<Guid> existingGuids = e.GetEntitySchemaGuids();
+            DeleteExsistingEntity(element, fieldName);
+
+            if (schema == null) schema = CreateASchema<T>(fieldName, SchemaType.SimpleField, needUnit, unitType, documentation);
+
+            Entity entity = new Entity(schema);
+            entity.Set<T>(fieldName, data, displayUnitType);
+
+            element.SetEntity(entity);
+        }
+
+        public static void SaveArrayDataToElement<T>(Element element, IList<T> array, string fieldName, DisplayUnitType displayUnitType,
+            Schema schema = null, bool needUnit = false, UnitType unitType = UnitType.UT_Undefined,
+            string documentation = null)
+        {
+            // Delete existing schemas
+            DeleteExsistingEntity(element, fieldName);
+
+            if (schema == null) schema = CreateASchema<T>(fieldName, SchemaType.ArrayField, needUnit, unitType, documentation, array);
+
+            Entity entity = new Entity(schema);
+            entity.Set<IList<T>>(fieldName, array, displayUnitType);
+
+            element.SetEntity(entity);
+        }
+
+        static void DeleteExsistingEntity(Element element, string fieldName)
+        {
+            // Delete existing schemas
+            IList<Guid> existingGuids = element.GetEntitySchemaGuids();
             if (existingGuids.Count > 0)
             {
                 foreach (Guid existingGuid in existingGuids)
                 {
                     Schema existingSchema = Schema.Lookup(existingGuid);
-                    Entity existingEntity = e.GetEntity(existingSchema);
+                    Entity existingEntity = element.GetEntity(existingSchema);
                     IList<Field> existingFields = existingSchema.ListFields();
-                    if (existingSchema.SchemaName == fieldName) e.DeleteEntity(existingSchema);
+                    if (existingSchema.SchemaName == fieldName) element.DeleteEntity(existingSchema);
+                }
+            }
+        }
+
+        public static Schema CreateASchema<T>(string fieldName, SchemaType schemaType,
+            bool needUnit = false, UnitType unitType = UnitType.UT_Undefined, string documentation = null, IList<T> array = null, Type keyType = null)
+        {
+            // Verify if schema has already existed
+            IList<Schema> schemas = Schema.ListSchemas();
+            foreach (Schema schema in schemas)
+            {
+                try
+                {
+                    if (schema.GetField(fieldName) != null) return schema;
+                }
+                catch (Exception)
+                {
                 }
             }
 
-            // Add new schemas
+            //
             Guid g = Guid.NewGuid();
             SchemaBuilder schemaBuilder = new SchemaBuilder(g);
             schemaBuilder.SetReadAccessLevel(AccessLevel.Public);
@@ -384,28 +432,21 @@ namespace TFrame
             schemaBuilder.SetVendorId("THAISTUDIO");
 
             //Create a field
-            FieldBuilder field = schemaBuilder.AddSimpleField(fieldName, typeof(T));
-            field.SetDocumentation(fieldName);
+            FieldBuilder field = null;
+            if (schemaType == SchemaType.SimpleField) field = schemaBuilder.AddSimpleField(fieldName, typeof(T));
+            else if (schemaType == SchemaType.ArrayField) field = schemaBuilder.AddArrayField(fieldName, typeof(T));
+            else if (schemaType == SchemaType.MapField) field = schemaBuilder.AddMapField(fieldName, keyType, typeof(T));
+
+            if (documentation != null) field.SetDocumentation(documentation);
 
             schemaBuilder.SetSchemaName(fieldName);
 
-            if (info is double) field.SetUnitType(unitType);
+            if (needUnit) field.SetUnitType(unitType);
 
-
-            Schema schema = schemaBuilder.Finish();
-
-            Entity entity = new Entity(schema);
-
-            //Get the filed from the schema
-            Field getField = schema.GetField(fieldName);
-
-            if (info is string) entity.Set(getField, info, DisplayUnitType.DUT_UNDEFINED);
-            else if (!(info is string)) entity.Set(getField, info, displayUnitType);
-
-            e.SetEntity(entity);
+            return schemaBuilder.Finish();
         }
 
-        public static T GetInfoFromElement<T>(Element e, string fieldName, DisplayUnitType displayUnitType)
+        public static T LoadDataFromElement<T>(Element e, string fieldName, DisplayUnitType displayUnitType)
         {
             T v = default(T);
             var schemaGuids = e.GetEntitySchemaGuids();
@@ -421,13 +462,14 @@ namespace TFrame
             }
             return v;
         }
+        #endregion
     }
 
-    /// <summary>
-    /// Use this class to save data to revit element
-    /// </summary>
-    public class TStoreData
+    public enum SchemaType
     {
-        
+        SimpleField,
+        ArrayField,
+        MapField,
+        None
     }
 }

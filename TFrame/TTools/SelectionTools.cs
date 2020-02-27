@@ -17,7 +17,7 @@ namespace TFrame
         static Document _doc;
         FamilyTools fTools;
 
-        public SelectionTools()
+        public SelectionTools(ExternalCommandData commandData)
         {
             _commandData = GlobalParams.ExternalCommandData;
             _uiDoc = _commandData.Application.ActiveUIDocument;

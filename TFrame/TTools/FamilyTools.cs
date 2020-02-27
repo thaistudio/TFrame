@@ -14,9 +14,9 @@ namespace TFrame
     {
         static Document _doc;
 
-        public FamilyTools()
+        public FamilyTools(Document doc)
         {
-            _doc = GlobalParams.Doccument;
+            _doc = doc;
         }
 
         /// <summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.ExtensibleStorage;
 
 namespace TFrame
 {
@@ -10,6 +11,12 @@ namespace TFrame
     {
         private double _L;
         private string _ViewSectionName;
+
+        public Section()
+        {
+            DimIds = new List<ElementId>();
+            RebarTagIds = new List<ElementId>();
+        }
 
         public double L
         {
@@ -81,6 +88,16 @@ namespace TFrame
         public string Name { get; set; }
         public BoundingBoxXYZ ViewerBoundingBox { get; set; }
         public Element Viewer { get; set; }
+        public Schema RebarTagIdSchema { get; set; }
+
+        //// Estorage
+        // Constant
+        public string FieldRebarTagIds = "RebarTagIds";
+        public string FieldDimIds = "DimIds";
+
+        // IList
+        public IList<ElementId> RebarTagIds { get; set; }
+        public IList<ElementId> DimIds { get; set; }
 
         public void SetDimensionProperties()
         {
@@ -122,6 +139,31 @@ namespace TFrame
             if (point == Point.P6) return p6;
             if (point == Point.P7) return p7;
             return null;
+        }
+
+        public Schema CreateSchema<T>(string fieldName, SchemaType schemaType, 
+            bool needUnit= false, UnitType unitType = UnitType.UT_Undefined, string documentation = null, IList<T> array = null, Type keyType = null)
+        {
+            return DataTools.CreateASchema<T>(fieldName, schemaType, needUnit, unitType, documentation, array, keyType);
+        }
+
+
+        public void SaveSimpleDataToViewSection<T>(T info, string fieldName, DisplayUnitType displayUnitType,
+            Schema schema = null, bool needUnit = false, UnitType unitType = UnitType.UT_Undefined, string documentation = null)
+        {
+            DataTools.SaveSimpleDataToElement<T>(ViewSection, info, fieldName, displayUnitType, schema, needUnit, unitType, documentation);
+        }
+
+        public void SaveArrayDataToViewSection<T>(IList<T> array, string fieldName, DisplayUnitType displayUnitType,
+            Schema schema = null, bool needUnit = false, UnitType unitType = UnitType.UT_Undefined,
+            string documentation = null)
+        {
+            DataTools.SaveArrayDataToElement<T>(ViewSection, array, fieldName, displayUnitType, schema, needUnit, unitType, documentation);
+        }
+
+        public T LoadDataFromViewSection<T>(string fieldName, DisplayUnitType displayUnitType)
+        {
+            return DataTools.LoadDataFromElement<T>(ViewSection, fieldName, displayUnitType);
         }
     }
 

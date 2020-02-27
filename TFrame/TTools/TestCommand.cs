@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI.Selection;
+using Autodesk.Revit.DB.ExtensibleStorage;
 
 namespace TFrame
 {
@@ -24,25 +25,17 @@ namespace TFrame
             ElementId id = sel.GetElementIds().FirstOrDefault();
             Element e = doc.GetElement(id);
 
-            ScheduleSheetInstance ins = (ScheduleSheetInstance)e;
-            var l = ins.GetSubelements();
+            TextNote tn = (TextNote)e;
+            string name = tn.Text.ToString();
+            string n = name.Replace("\r", "");
 
-            ElementId scheduleId = ins.ScheduleId;
-            ViewSchedule masterSchedule = (ViewSchedule)(doc.GetElement(scheduleId));
-            TableData tableData = masterSchedule.GetTableData();
-
-            TableSectionData tsd1 = tableData.GetSectionData(SectionType.Body);
-            TableSectionData tsd2 = tableData.GetSectionData(SectionType.Footer);
-            TableSectionData tsd3 = tableData.GetSectionData(SectionType.Header);
-            TableSectionData tsd4 = tableData.GetSectionData(SectionType.Summary);
-            TableSectionData tsd5 = tableData.GetSectionData(SectionType.None);
-
-            ScheduleDefinition scheDef = masterSchedule.Definition;
-            IList<ScheduleFieldId> fieldIds = scheDef.GetFieldOrder();
-            foreach (ScheduleFieldId fieldId in fieldIds)
-            {
-                ScheduleField scheField = scheDef.GetField(fieldId);
-            }
+            //List<Section> sections = SectionTools.CacheSections(e, doc, SectionTools.SectionType.CrossSection);
+            //foreach (Section section in sections)
+            //{
+            //    IList<ElementId> tag = section.RebarTagIds;
+            //    IList<ElementId> dims = section.DimIds;
+            //}
+            
 
             return Result.Succeeded;
         }

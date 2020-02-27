@@ -60,7 +60,7 @@ namespace TFrame
                         int i = setting.Suffix;
                         foreach (Element beam in group)
                         {
-                            if (UseGridName) circumfix = DataTools.GetInfoFromElement<string>(beam, "GridName", DisplayUnitType.DUT_UNDEFINED); //
+                            if (UseGridName) circumfix = DataTools.LoadDataFromElement<string>(beam, "GridName", DisplayUnitType.DUT_UNDEFINED); //
                             else circumfix = setting.Circumfix;
 
                             beam.get_Parameter(BuiltInParameter.ALL_MODEL_MARK).
@@ -98,7 +98,7 @@ namespace TFrame
 
             if (ps.IsGridName)
             {
-                ps.Part = DataTools.GetInfoFromElement<string>(beam, "GridName", DisplayUnitType.DUT_UNDEFINED);
+                ps.Part = DataTools.LoadDataFromElement<string>(beam, "GridName", DisplayUnitType.DUT_UNDEFINED);
                 mark = ps.Part;
             }
 
@@ -323,7 +323,7 @@ namespace TFrame
                         group.Add(beam);
 
                         // Add grid name to beam data
-                        DataTools.AddInfoToElement(beam, grid.Name, "GridName", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
+                        DataTools.SaveSimpleDataToElement(beam, grid.Name, "GridName", DisplayUnitType.DUT_UNDEFINED, null, false, UnitType.UT_Undefined, "Holds Grid name");
                     }
                 }
 

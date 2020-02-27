@@ -48,6 +48,8 @@
             this.comboBox2 = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.textBoxAbsDistance = new System.Windows.Forms.TextBox();
+            this.textBoxRelativeDistance = new System.Windows.Forms.TextBox();
             this.radioButton4 = new System.Windows.Forms.RadioButton();
             this.radioButton3 = new System.Windows.Forms.RadioButton();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -56,8 +58,6 @@
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBoxRelativeDistance = new System.Windows.Forms.TextBox();
-            this.textBoxAbsDistance = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -269,6 +269,22 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Section Location";
             // 
+            // textBoxAbsDistance
+            // 
+            this.textBoxAbsDistance.Location = new System.Drawing.Point(148, 44);
+            this.textBoxAbsDistance.Name = "textBoxAbsDistance";
+            this.textBoxAbsDistance.Size = new System.Drawing.Size(76, 20);
+            this.textBoxAbsDistance.TabIndex = 32;
+            this.textBoxAbsDistance.Leave += new System.EventHandler(this.TextBoxAbsDistance_Leave);
+            // 
+            // textBoxRelativeDistance
+            // 
+            this.textBoxRelativeDistance.Location = new System.Drawing.Point(148, 18);
+            this.textBoxRelativeDistance.Name = "textBoxRelativeDistance";
+            this.textBoxRelativeDistance.Size = new System.Drawing.Size(76, 20);
+            this.textBoxRelativeDistance.TabIndex = 31;
+            this.textBoxRelativeDistance.Leave += new System.EventHandler(this.TextBoxRelativeDistance_Leave);
+            // 
             // radioButton4
             // 
             this.radioButton4.AutoSize = true;
@@ -288,10 +304,10 @@
             this.radioButton3.Location = new System.Drawing.Point(20, 19);
             this.radioButton3.Margin = new System.Windows.Forms.Padding(2);
             this.radioButton3.Name = "radioButton3";
-            this.radioButton3.Size = new System.Drawing.Size(124, 17);
+            this.radioButton3.Size = new System.Drawing.Size(107, 17);
             this.radioButton3.TabIndex = 28;
             this.radioButton3.TabStop = true;
-            this.radioButton3.Text = "Relative distance: L/";
+            this.radioButton3.Text = "Relative distance";
             this.radioButton3.UseVisualStyleBackColor = true;
             this.radioButton3.CheckedChanged += new System.EventHandler(this.radioButton3_CheckedChanged);
             // 
@@ -353,22 +369,6 @@
             this.textBox1.Size = new System.Drawing.Size(52, 20);
             this.textBox1.TabIndex = 29;
             // 
-            // textBoxRelativeDistance
-            // 
-            this.textBoxRelativeDistance.Location = new System.Drawing.Point(148, 18);
-            this.textBoxRelativeDistance.Name = "textBoxRelativeDistance";
-            this.textBoxRelativeDistance.Size = new System.Drawing.Size(76, 20);
-            this.textBoxRelativeDistance.TabIndex = 31;
-            this.textBoxRelativeDistance.Leave += new System.EventHandler(this.TextBoxRelativeDistance_Leave);
-            // 
-            // textBoxAbsDistance
-            // 
-            this.textBoxAbsDistance.Location = new System.Drawing.Point(148, 44);
-            this.textBoxAbsDistance.Name = "textBoxAbsDistance";
-            this.textBoxAbsDistance.Size = new System.Drawing.Size(76, 20);
-            this.textBoxAbsDistance.TabIndex = 32;
-            this.textBoxAbsDistance.Leave += new System.EventHandler(this.TextBoxAbsDistance_Leave);
-            // 
             // SectionForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -391,6 +391,7 @@
             this.Controls.Add(this.comboBox1);
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "SectionForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Cross-Section Settings";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SectionForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();

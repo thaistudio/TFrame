@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using Autodesk.Revit.DB.ExtensibleStorage;
 
 namespace TFrame
 {
@@ -100,11 +101,17 @@ namespace TFrame
 
                                 sec.Host = viewSection.LookupParameter("T_Mark").AsString();
 
-                                DataTools.AddInfoToElement<string>(viewSection, "LongSection", "Direction", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
-                                DataTools.AddInfoToElement<string>(viewSection, sec.Offset.ToString(), "Offset", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
-                                DataTools.AddInfoToElement<string>(viewSection, sec.ViewFamilyType.Name, "ViewFamilyType", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
-                                DataTools.AddInfoToElement<string>(viewSection, sec.Template.Name, "Template", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
-                                DataTools.AddInfoToElement<string>(viewSection, sec.Host, "Host", UnitType.UT_Undefined, DisplayUnitType.DUT_UNDEFINED);
+                                Schema longSetionSchema = DataTools.CreateASchema<string>("LongSection", SchemaType.SimpleField);
+                                Schema sectionOffsetSchema = DataTools.CreateASchema<string>("LongSection", SchemaType.SimpleField);
+                                Schema sectionViewFamilyTypeSchema = DataTools.CreateASchema<string>("LongSection", SchemaType.SimpleField);
+                                Schema sectionTemplateSchema = DataTools.CreateASchema<string>("LongSection", SchemaType.SimpleField);
+                                Schema sectionHostSchema = DataTools.CreateASchema<string>("LongSection", SchemaType.SimpleField);
+
+                                DataTools.SaveSimpleDataToElement<string>(viewSection, "LongSection", "Direction", DisplayUnitType.DUT_UNDEFINED, longSetionSchema);
+                                DataTools.SaveSimpleDataToElement<string>(viewSection, sec.Offset.ToString(), "Offset", DisplayUnitType.DUT_UNDEFINED, sectionOffsetSchema);
+                                DataTools.SaveSimpleDataToElement<string>(viewSection, sec.ViewFamilyType.Name, "ViewFamilyType", DisplayUnitType.DUT_UNDEFINED, sectionViewFamilyTypeSchema);
+                                DataTools.SaveSimpleDataToElement<string>(viewSection, sec.Template.Name, "Template", DisplayUnitType.DUT_UNDEFINED, sectionTemplateSchema);
+                                DataTools.SaveSimpleDataToElement<string>(viewSection, sec.Host, "Host", DisplayUnitType.DUT_UNDEFINED, sectionHostSchema);
 
                                 if (sec.ViewSectionName != null) viewSection.LookupParameter("T_SectionName").Set(sec.ViewSectionName);
                                 viewSection.ViewTemplateId = sec.Template.Id;

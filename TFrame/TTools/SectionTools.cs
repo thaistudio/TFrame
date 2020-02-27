@@ -56,7 +56,6 @@ namespace TFrame
         {
             List<Section> CachedSections = new List<Section>();
             string mark = ElementTools.GetMark(beam);
-            TStoreData tData = new TStoreData();
             var viewElements = new FilteredElementCollector(doc).OfClass(typeof(ViewSection)).Where(x => x.LookupParameter("T_Mark").AsString() == mark).Where(x => x.LookupParameter("T_Mark").AsString() != "");
             foreach (Element viewElement in viewElements)
             {
@@ -67,7 +66,7 @@ namespace TFrame
 
                     if (!vs.IsTemplate)
                     {
-                        var v1 = DataTools.GetInfoFromElement<string>(vs, "Direction", DisplayUnitType.DUT_UNDEFINED);
+                        var v1 = DataTools.LoadDataFromElement<string>(vs, "Direction", DisplayUnitType.DUT_UNDEFINED);
                         if (v1 != null && v1 == "CrossSection" && sectionType == SectionType.CrossSection)
                         {
                             var b = vs.get_BoundingBox(doc.ActiveView);
@@ -94,11 +93,11 @@ namespace TFrame
                         else if (v1 != null && v1 == "LongSection" && sectionType == SectionType.LongSection)
                         {
                             int r = vs.GetEntitySchemaGuids().Count;
-                            string offset = DataTools.GetInfoFromElement<string>(vs, "Offset", DisplayUnitType.DUT_UNDEFINED);
-                            string viewFamType = DataTools.GetInfoFromElement<string>(vs, "ViewFamilyType", DisplayUnitType.DUT_UNDEFINED);
-                            string template = DataTools.GetInfoFromElement<string>(vs, "Template", DisplayUnitType.DUT_UNDEFINED);
+                            string offset = DataTools.LoadDataFromElement<string>(vs, "Offset", DisplayUnitType.DUT_UNDEFINED);
+                            string viewFamType = DataTools.LoadDataFromElement<string>(vs, "ViewFamilyType", DisplayUnitType.DUT_UNDEFINED);
+                            string template = DataTools.LoadDataFromElement<string>(vs, "Template", DisplayUnitType.DUT_UNDEFINED);
                             string viewSectionName = vs.Name;
-                            string host = DataTools.GetInfoFromElement<string>(vs, "Host", DisplayUnitType.DUT_UNDEFINED);
+                            string host = DataTools.LoadDataFromElement<string>(vs, "Host", DisplayUnitType.DUT_UNDEFINED);
 
                             CachedSection.Offset = Convert.ToDouble(offset);
                             CachedSection.ViewFamilyType = (ViewFamilyType)(FamilyTools.GetTypeInstanceByName<ViewFamilyType>(viewFamType, doc).FirstOrDefault());
@@ -110,8 +109,15 @@ namespace TFrame
                             CachedSections.Add(CachedSection);
                         }
                     }
+
+                    IList<ElementId> dimIds = CachedSection.LoadDataFromViewSection<IList<ElementId>>(CachedSection.FieldDimIds, DisplayUnitType.DUT_UNDEFINED);
+                    if (dimIds != null) CachedSection.DimIds = dimIds;
+
+                    IList<ElementId> tagIds = CachedSection.LoadDataFromViewSection<IList<ElementId>>(CachedSection.FieldRebarTagIds, DisplayUnitType.DUT_UNDEFINED);
+                    if (tagIds != null) CachedSection.RebarTagIds = tagIds;
                 }
             }
+
             return CachedSections;
         }
 
